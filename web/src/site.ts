@@ -136,7 +136,16 @@ export interface Release {
  * out of the built pages (scripts/release.ts), which never describe a version
  * that doesn't exist.
  */
-export const RELEASE: Release | undefined = undefined
+export const RELEASE: Release | undefined = {
+  tag: 'v1.0.0',
+  date: '2026-11-02',
+  files: [
+    { system: 'windows', name: 'slynk.exe', bytes: 20973568, sha256: '6c5ec288c7b74ecb2696cc4231f112f13785ac5836b61c00cbf7fbb17b4867aa' },
+    { system: 'mac-arm', name: 'slynk-mac-apple-silicon.zip', bytes: 14086849, sha256: '010aa2b48560c0bb4f0939bdff996f1e82786b9c7a69af31000c3b5a7ab16757' },
+    { system: 'mac-intel', name: 'slynk-mac-intel.zip', bytes: 14372341, sha256: '5b2d22f9a0ee8967e2c2be0619949c6161a94bfc2c51a82d0d28214ba0e53c76' },
+    { system: 'linux', name: 'slynk-linux-x64.zip', bytes: 14030482, sha256: '166e766c092a263e35def129b0ebc1fe47a8966b72f504ef52fe35fc39fd3dd5' },
+  ],
+}
 
 /** A release file's download address, or '' while there's no published code. */
 export function releaseLink(release: Release, file: ReleaseFile): string {
