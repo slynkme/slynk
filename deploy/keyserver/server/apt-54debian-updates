@@ -1,0 +1,7 @@
+// /etc/apt/apt.conf.d/54slynk-debian-updates: Debian's "updates" channel too
+// (fixes that can't wait for the next point release, such as time-zone data),
+// installed by themselves like the security fixes. Debian's own
+// 50unattended-upgrades leaves it out. Used on the web server as well.
+Unattended-Upgrade::Origins-Pattern {
+	"origin=Debian,codename=${distro_codename}-updates";
+};

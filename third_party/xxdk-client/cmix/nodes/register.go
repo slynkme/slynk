@@ -1,0 +1,231 @@
+////////////////////////////////////////////////////////////////////////////////
+// Copyright © 2022 xx foundation                                             //
+//                                                                            //
+// Use of this source code is governed by a license that can be found in the  //
+// LICENSE file.                                                              //
+////////////////////////////////////////////////////////////////////////////////
+
+package nodes
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"gitlab.com/xx_network/crypto/csprng"
+	"strconv"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
+
+	"github.com/pkg/errors"
+	jww "github.com/spf13/jwalterweatherman"
+	"gitlab.com/elixxir/client/v4/cmix/gateway"
+	"gitlab.com/elixxir/client/v4/stoppable"
+	"gitlab.com/elixxir/comms/network"
+	"gitlab.com/elixxir/crypto/cyclic"
+	"gitlab.com/xx_network/primitives/ndf"
+)
+
+// registerNodes is a manager thread which waits on a channel for nodes
+// to register with. On reception, it tries to register with that node.
+// This thread is interrupted by the stoppable.Single passed in.
+// The sync.Map's keep track of the node(s) that were in progress
+// before an interruption and how many registration attempts have
+// been attempted.
+func registerNodes(r *registrar, s session, stop *stoppable.Single,
+	inProgress, attempts *sync.Map) {
+
+	atomic.AddInt64(r.numberRunning, 1)
+	for {
+		select {
+		case <-r.pauser:
+			atomic.AddInt64(r.numberRunning, -1)
+			select {
+			case <-stop.Quit():
+				stop.ToStopped()
+				return
+			case <-r.resumer:
+				atomic.AddInt64(r.numberRunning, 1)
+			}
+		case <-stop.Quit():
+			stop.ToStopped()
+			atomic.AddInt64(r.numberRunning, -1)
+			return
+
+		case gw := <-r.c:
+			if r.disableNodeRegistration {
+				jww.WARN.Printf("Node registration has been disabled; ignoring received registration request")
+				continue
+			}
+			rng := r.rng.GetStream()
+
+			// Pull node information from channel
+			nidStr := hex.EncodeToString(gw.Node.ID)
+			nid, err := gw.Node.GetNodeId()
+			if err != nil {
+				jww.WARN.Printf(
+					"Could not process node ID for registration: %s", err)
+				rng.Close()
+				continue
+			}
+
+			// Check if the registrar has this node already
+			if r.HasNode(nid) {
+				jww.TRACE.Printf(
+					"Not registering node %s, already registered", nid)
+			}
+
+			// Check if the client is already attempting to register with this
+			// node in another thread
+			if _, operating := inProgress.LoadOrStore(nidStr,
+				struct{}{}); operating {
+				rng.Close()
+				continue
+			}
+
+			// No need to register with stale nodes
+			if isStale := gw.Node.Status == ndf.Stale; isStale {
+				jww.DEBUG.Printf(
+					"Skipping registration with stale nodes %s", nidStr)
+				rng.Close()
+				continue
+			}
+
+			// Register with this node
+			err = registerWithNode(r.sender, r.comms, gw, s, r, rng, stop)
+			if stoppable.CheckErr(err) {
+				gwIDStr := hex.EncodeToString(gw.Gateway.ID)
+				gwAddr := gw.Gateway.Address
+				jww.ERROR.Printf("Failed to register node %s via gateway %s (%s): %s",
+					nidStr, gwIDStr, gwAddr, err)
+				inProgress.Delete(nidStr)
+				stop.ToStopped()
+				return
+			}
+
+			// Process the result
+			if err != nil {
+				gwIDStr := hex.EncodeToString(gw.Gateway.ID)
+				gwAddr := gw.Gateway.Address
+
+				if gateway.IsHostPoolNotReadyError(err) {
+					jww.WARN.Printf("Failed to register node %s via gateway %s (%s): host pool not ready - %s",
+						nidStr, gwIDStr, gwAddr, err.Error())
+
+					// Wait 5 seconds to give the host pool a chance to resolve
+					select {
+					case <-time.NewTimer(5 * time.Second).C:
+					case <-stop.Quit():
+						inProgress.Delete(nidStr)
+						stop.ToStopped()
+						return
+					}
+
+					// Now delete from in-progress and re-enqueue for retry
+					inProgress.Delete(nidStr)
+					r.c <- gw
+				} else {
+					// Check if this is a permanent failure (no grpc-web support)
+					isPermanentFailure := strings.Contains(err.Error(), "Failed to fetch") ||
+						strings.Contains(err.Error(), "NetworkError when attempting to fetch")
+
+					if isPermanentFailure {
+						jww.WARN.Printf("Gateway %s (%s) does not support gRPC-web or has invalid TLS cert - skipping retries for node %s: %s",
+							gwIDStr, gwAddr, nidStr, err.Error())
+						// Mark as max attempts to prevent retries
+						attempts.Store(nidStr, uint(maxAttempts))
+						inProgress.Delete(nidStr)
+						continue
+					}
+
+					jww.ERROR.Printf("Failed to register node %s via gateway %s (%s): %s",
+						nidStr, gwIDStr, gwAddr, err.Error())
+
+					// Keep track of how many times registering with this node
+					// has been attempted
+					numAttempts := uint(1)
+					if nunAttemptsInterface, hasValue := attempts.LoadOrStore(
+						nidStr, numAttempts); hasValue {
+						numAttempts = nunAttemptsInterface.(uint)
+						attempts.Store(nidStr, numAttempts+1)
+					}
+
+					// If we have not reached the attempt limit for this gateway,
+					// then send it back into the channel to retry
+					if numAttempts < maxAttempts {
+						go func(nodeIdStr string, gateway network.NodeGateway, delay time.Duration) {
+							// Delay the send operation for a backoff
+							time.Sleep(delay)
+							// Delete from in-progress right before re-enqueueing
+							inProgress.Delete(nodeIdStr)
+							r.c <- gateway
+						}(nidStr, gw, delayTable[numAttempts-1])
+					} else {
+						// Max attempts reached, not retrying
+						inProgress.Delete(nidStr)
+					}
+				}
+			} else {
+				// Success case - remove from in-progress
+				inProgress.Delete(nidStr)
+			}
+			rng.Close()
+		}
+	}
+}
+
+// registerWithNode serves as a helper for registerNodes. It registers a user
+// with a specific in the client's NDF.
+func registerWithNode(sender gateway.Sender, comms RegisterNodeCommsInterface,
+	ngw network.NodeGateway, s session, r *registrar,
+	rng csprng.Source, stop *stoppable.Single) error {
+	nodeID, err := ngw.Node.GetNodeId()
+	if err != nil {
+		jww.ERROR.Printf("registerWithNode failed to decode node ID: %v", err)
+		return err
+	}
+
+	if r.HasNode(nodeID) {
+		return nil
+	}
+
+	jww.INFO.Printf("registerWithNode begin registration with node: %s",
+		nodeID)
+
+	var transmissionKey *cyclic.Int
+	var validUntil uint64
+	var keyId []byte
+
+	start := time.Now()
+	// TODO: should move this to a pre-canned user initialization
+	if s.IsPrecanned() {
+		transmissionKey = getPrecannedTransmissionKey(s, r)
+		jww.INFO.Printf("transmissionKey: %v", transmissionKey.Bytes())
+	} else {
+		// Request key from server
+		transmissionKey, keyId, validUntil, err = requestKey(
+			sender, comms, ngw, s, r, rng, stop)
+
+		if err != nil {
+			return errors.Errorf("Failed to request key: %v", err)
+		}
+	}
+
+	r.add(nodeID, transmissionKey, validUntil, keyId)
+
+	jww.INFO.Printf("Completed registration with node %s,"+
+		" took %s", nodeID, time.Since(start))
+
+	return nil
+}
+
+func getPrecannedTransmissionKey(s session, r *registrar) *cyclic.Int {
+	userNum := int(s.GetTransmissionID().Bytes()[7])
+	h := sha256.New()
+	h.Reset()
+	h.Write([]byte(strconv.Itoa(4000 + userNum)))
+	var transmissionKey *cyclic.Int
+	transmissionKey = r.session.GetCmixGroup().NewIntFromBytes(h.Sum(nil))
+	jww.INFO.Printf("transmissionKey: %v", transmissionKey.Bytes())
+	return transmissionKey
+}

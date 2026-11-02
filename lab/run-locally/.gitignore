@@ -1,0 +1,5 @@
+# The built site, copied in to build with -tags embed
+site/
+# Built programs
+slynk-local
+slynk-local-*

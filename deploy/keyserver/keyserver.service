@@ -1,0 +1,82 @@
+# slynk.me's key server (core/cmd/keyserver), as a locked-down service.
+# Installed by install.sh; see deploy/README.md, "The key server".
+#
+# Stopping it (systemctl stop or restart, or a reboot) saves its records (the
+# waiting key halves, claims still holding one, and tombstones) to
+# /var/lib/keyserver/shutdown, which the next start reads back and
+# destroys before answering. A reload (systemctl reload) only re-reads the
+# certificate, keeping everything in memory.
+[Unit]
+Description=Slynk key server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# It says "ready" once it has read and destroyed the shutdown file and is
+# listening, so ExecStartPost (fstrim) runs after that.
+Type=notify
+NotifyAccess=main
+User=keyserver
+Group=keyserver
+# -allow-origin: slynk.me's page, and the copy people download and run on their own
+# computer, which serves the page at http://127.0.0.1:8293 (every computer's own address).
+ExecStart=/usr/local/bin/keyserver -listen :443 -http :80 \
+    -cert /etc/keyserver/tls/fullchain.pem -key /etc/keyserver/tls/privkey.pem \
+    -acme-dir /var/lib/keyserver/acme -state-dir /var/lib/keyserver -status /run/keyserver/status \
+    -allow-origin https://slynk.me,http://127.0.0.1:8293 -pow-bits 20 -max-records 2000000 -max-conns 2048
+ExecReload=/bin/kill -HUP $MAINPID
+# Best effort: tell the disk that the shutdown file's freed blocks are unused.
+ExecStartPost=-+/usr/sbin/fstrim /
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=30
+OOMScoreAdjust=-500
+# About 400 MB with the room full (2 million links at about 200 bytes), plus
+# connections; the server has 1 GB, and this memory is locked into it.
+Environment=GOMEMLIMIT=650MiB
+# A crash prints no stack trace: it could hold request bytes.
+Environment=GOTRACEBACK=none
+
+# Nothing about requests is ever logged; start-up problems go to the journal,
+# which this server keeps in memory only.
+StandardOutput=null
+StandardError=journal
+
+# Memory: locked into RAM (no swap, no core dumps).
+LimitMEMLOCK=infinity
+LimitCORE=0
+# Two ports of at most 2,048 connections each (-max-conns), and a few files.
+LimitNOFILE=8192
+
+# Only what it needs: ports 80 and 443, its own folders, nothing else.
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+NoNewPrivileges=yes
+StateDirectory=keyserver
+StateDirectoryMode=0700
+RuntimeDirectory=keyserver
+RuntimeDirectoryMode=0700
+UMask=0077
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+[Install]
+WantedBy=multi-user.target

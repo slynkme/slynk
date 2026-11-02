@@ -1,0 +1,6635 @@
+/* Slynk. Dark-first, with a light theme. No external fonts or assets. */
+
+:root {
+  --font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI Variable Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  --grad: linear-gradient(115deg, #b69cff 0%, #7aa2ff 48%, #2ee6ff 100%);
+  --accent: #8b7bff;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --warn-text: #fbbf24;
+  --bad: #fb7185;
+  --on-grad: #0a0b12;
+  --radius-lg: 24px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  color-scheme: dark;
+  --bg: #05060b;
+  --glow-1: rgba(124, 92, 255, 0.2);
+  --glow-2: rgba(46, 230, 255, 0.1);
+  --surface: rgba(16, 18, 30, 0.66);
+  --sheet: rgba(16, 18, 30, 0.95);
+  --surface-2: rgba(255, 255, 255, 0.035);
+  --surface-3: rgba(255, 255, 255, 0.075);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.15);
+  --text: #eef0f8;
+  --muted: #9aa0b5;
+  --faint: #656c82;
+  --shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.8);
+  /* How strong a file row's progress tint is (tray.ts, stageOf): more on the dark theme to show. */
+  --tint: 24%;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --tint: 16%;
+  --bg: #f3f4f9;
+  --glow-1: rgba(124, 92, 255, 0.16);
+  --glow-2: rgba(46, 200, 255, 0.14);
+  --surface: rgba(255, 255, 255, 0.74);
+  --sheet: rgba(255, 255, 255, 0.95);
+  --surface-2: rgba(12, 14, 40, 0.035);
+  --surface-3: rgba(12, 14, 40, 0.07);
+  --line: rgba(12, 14, 40, 0.08);
+  --line-strong: rgba(12, 14, 40, 0.15);
+  --text: #11131c;
+  --muted: #555b70;
+  --faint: #8b91a5;
+  --warn-text: #8a5300;
+  --shadow: 0 30px 80px -30px rgba(40, 40, 100, 0.28);
+}
+
+/* Before the script picks a theme, follow the system. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+    --tint: 16%;
+    --bg: #f3f4f9;
+    --surface: rgba(255, 255, 255, 0.74);
+    --sheet: rgba(255, 255, 255, 0.95);
+    --text: #11131c;
+    --muted: #555b70;
+    --warn-text: #8a5300;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* No double-tap zoom: removing several files in a row on a phone zoomed the page
+     in. Pinching to zoom still works. */
+  touch-action: manipulation;
+  /* No blue flash over what's tapped (Android Chrome): it showed on the text beside
+     every switch. Switches still move, and keyboard
+     focus keeps its outline. It's inherited, so this covers the whole page. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The same on anything tappable, for browsers that look only at the element tapped. */
+button,
+a,
+label,
+summary,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(55% 45% at 15% 0%, var(--glow-1), transparent 70%),
+    radial-gradient(45% 40% at 95% 5%, var(--glow-2), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font: 16px/1.55 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+}
+
+.spring {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Top bar ------------------------------------------------------------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px clamp(16px, 4vw, 40px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+}
+
+.brand-name {
+  font-size: 1.3rem;
+  font-weight: 760;
+  letter-spacing: -0.03em;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.net {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--muted);
+  font: 500 0.82rem var(--font);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.net-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--warn);
+  animation: pulse 1.6s infinite;
+}
+
+.net[data-state='ready'] {
+  color: var(--text);
+}
+
+.net[data-state='ready'] .net-dot {
+  background: var(--ok);
+  box-shadow: 0 0 10px var(--ok);
+  animation: none;
+}
+
+.net[data-state='error'] .net-dot {
+  background: var(--bad);
+  animation: none;
+}
+
+.net[data-state='idle'] .net-dot {
+  background: var(--muted);
+  animation: none;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.icon-btn.small {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: transparent;
+}
+
+/* --- Hero ---------------------------------------------------------------- */
+
+.main {
+  flex: 1;
+  width: min(100%, 600px);
+  margin: 0 auto;
+  padding: clamp(8px, 4vh, 40px) 16px 32px;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0.3em 0 0.35em;
+  font-size: clamp(2.3rem, 7vw, 3.6rem);
+  font-weight: 780;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+
+.grad {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lede {
+  max-width: 32em;
+  margin: 0 auto;
+  /* Nearer the body text than --muted, with a glow in the page colour, so it
+     stays readable where the spring's coils run behind it. */
+  color: var(--text);
+  color: color-mix(in srgb, var(--text) 82%, var(--bg));
+  /* Even out the lines, so no word sits alone on the last one. The intro
+     text also ties its last two words with a no-break space, for browsers
+     without this. */
+  text-wrap: balance;
+  text-shadow:
+    0 0 4px var(--bg),
+    0 0 12px var(--bg),
+    0 0 24px var(--bg);
+  font-size: clamp(1rem, 2.4vw, 1.08rem);
+}
+
+/* --- Card ---------------------------------------------------------------- */
+
+.card {
+  --card-pad: clamp(18px, 4vw, 28px);
+  position: relative;
+  padding: var(--card-pad);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  box-shadow: var(--shadow);
+  scroll-margin-top: 12px; /* room above it when show() scrolls back to it */
+}
+
+/* Gradient hairline border. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(140deg, rgba(182, 156, 255, 0.55), rgba(255, 255, 255, 0.06) 35%, rgba(255, 255, 255, 0.04) 65%, rgba(46, 230, 255, 0.45));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.view {
+  animation: rise 0.45s var(--ease);
+}
+
+.view h2 {
+  margin: 0.15em 0 0.3em;
+  font-size: 1.45rem;
+  font-weight: 720;
+  letter-spacing: -0.025em;
+}
+
+.muted {
+  margin: 0;
+  color: var(--muted);
+}
+
+.note {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.note strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* --- Drop zone and chosen file ------------------------------------------- */
+
+.drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 36px 20px;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 18px;
+  background: var(--surface-2);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.25s var(--ease);
+}
+
+.drop:hover,
+.drop.drag {
+  border-color: rgba(150, 140, 255, 0.75);
+  background: rgba(124, 92, 255, 0.08);
+}
+
+.drop.drag {
+  transform: scale(1.015);
+}
+
+.drop-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 8px;
+  border-radius: 16px;
+  background: var(--surface-3);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.drop-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.drop-title {
+  font-weight: 650;
+}
+
+.link-ish {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.drop-sub {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+/* "2 MB in total" opens a short answer in a popup, so a typed message
+   and the link options stay put; a click on it doesn't open the file picker. A soft dotted
+   underline: more to know, rather than a link away. */
+.soft-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--faint);
+  text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.soft-link:hover,
+.meter-why:hover {
+  color: var(--text);
+}
+
+.soft-link:hover {
+  text-decoration-color: currentColor;
+}
+
+/* There if wanted: "Smallest"'s way to a better quality (tray.ts fitLink). */
+.soft-link.quiet {
+  color: var(--muted);
+  text-align: inherit; /* a button's own centring, when it wraps on a phone */
+}
+
+.soft-link.quiet:hover {
+  color: var(--text);
+}
+
+.soft-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Three kinds of link, so it's clear what a tap does:
+   - a soft dotted underline (.soft-link, above) stays on this page: a short answer in a
+     popup, or another of Slynk's own screens;
+   - a solid underline with a small arrow out of a box opens a page in a new tab (the About
+     page, the xx network's site): every link with target="_blank" gets the arrow;
+   - a chevron (.expander) shows or hides something just below it. */
+a[target='_blank']::after {
+  content: '';
+  display: inline-block;
+  width: 0.74em;
+  height: 0.74em;
+  margin-left: 0.24em;
+  vertical-align: -0.04em;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 3.5h6.5V10M20.5 3.5 11 13M18 14v5.2a1.3 1.3 0 0 1-1.3 1.3H4.8a1.3 1.3 0 0 1-1.3-1.3V7.3A1.3 1.3 0 0 1 4.8 6H10'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 3.5h6.5V10M20.5 3.5 11 13M18 14v5.2a1.3 1.3 0 0 1-1.3 1.3H4.8a1.3 1.3 0 0 1-1.3-1.3V7.3A1.3 1.3 0 0 1 4.8 6H10'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+/* A web link in a message (ui/linkWarn.ts): the new-tab arrow and a solid underline, in the text's
+   own colour, and kept apart from right-to-left text around it, so neither reorders the other. */
+.msg-link {
+  color: inherit;
+  text-underline-offset: 2px;
+  unicode-bidi: isolate;
+}
+
+/* The popup before one opens: where it goes, in a box like an address bar, in a typewriter font
+   that tells l from I and 0 from O, with Copy inside its right edge; then another site's full
+   address, small. */
+.link-warn-box {
+  position: relative;
+  margin: 6px 0 0;
+}
+
+.link-warn-host {
+  margin: 0;
+  padding: 10px 48px 10px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  font: 600 1.05rem/1.35 var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.link-warn-full {
+  max-height: 6.4em;
+  margin: 6px 2px 0;
+  overflow: auto;
+  color: var(--muted);
+  font: 0.8rem/1.6 var(--mono);
+  overflow-wrap: anywhere;
+}
+
+/* For a Slynk link from an inbox: how to better protect whoever sent it, a little quieter. */
+.link-warn-careful {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Copy, then a tick for a moment once copied. */
+.link-warn-copy[data-copied='true'] .copy-do,
+.link-warn-copy[data-copied='false'] .copy-done {
+  display: none;
+}
+
+.link-warn-copy[data-copied='true'] {
+  color: var(--ok);
+}
+
+/* Open and Cancel side by side, each as wide as its words need and sharing what's left; one above the
+   other where both don't fit, rather than "Open in a new tab" over two lines. */
+.link-warn-foot .btn,
+.local-why-foot .btn {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+
+/* The footer's About link says it in words instead, on the line under it. */
+a.no-ext::after {
+  content: none;
+}
+
+/* In a copy run from one's own computer, Slynk's own pages open in its own window (ui/localLinks.ts):
+   no new-tab arrow, and no "(opens in new tab)". */
+[data-local] a[target='_blank'][href^='/']::after {
+  content: none;
+}
+
+[data-local] .footer-new-tab {
+  display: none;
+}
+
+/* Words for the website, or for a copy run from one's own computer (the About
+   page is right for the website, but some of it isn't for a copy). Both are the same files, so the page
+   carries both, and ui/localLinks.ts marks the copy (html[data-local]). */
+html:not([data-local]) .on-local,
+html[data-local] .on-web {
+  display: none !important;
+}
+
+.expander {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.expander::after {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.2s var(--ease);
+}
+
+.expander[aria-expanded='true']::after {
+  transform: translateY(1px) rotate(-135deg);
+}
+
+.expander:hover {
+  color: var(--text);
+}
+
+.expander:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* A heading or a line the page moves the focus to (a new step, a result) is a place to start
+   reading, not a control: no ring around it, even after a key press (the ready screen's title
+   got one after Enter on the last word). */
+h1[tabindex='-1']:focus,
+h2[tabindex='-1']:focus,
+h3[tabindex='-1']:focus,
+p[tabindex='-1']:focus {
+  outline: none;
+}
+
+.chosen {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-2);
+  animation: rise 0.35s var(--ease);
+}
+
+.file-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--grad);
+  color: var(--on-grad);
+}
+
+.file-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.chosen-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chosen-meta strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chosen-meta span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+/* A list of files (composer) or of what arrived (several items). */
+.items {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 10px 10px 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+  animation: rise 0.35s var(--ease);
+}
+
+/* How far a file in the tray is on its way (tray.ts, stageOf): a pale bar across its row,
+   lavender while it's worked on, green once ready, red if it can't be sent, amber while it
+   waits for an answer. */
+.item[data-stage] {
+  --p: 0;
+  background-image: linear-gradient(var(--stage), var(--stage));
+  background-repeat: no-repeat;
+  background-size: calc(var(--p) * 100%) 100%;
+  transition: background-size 0.45s var(--ease);
+}
+
+.item[data-stage='working'] {
+  --stage: color-mix(in srgb, var(--accent) var(--tint), transparent);
+}
+
+.item[data-stage='ready'] {
+  --stage: color-mix(in srgb, var(--ok) var(--tint), transparent);
+}
+
+.item[data-stage='blocked'] {
+  --stage: color-mix(in srgb, var(--bad) var(--tint), transparent);
+}
+
+.item[data-stage='asking'] {
+  --stage: color-mix(in srgb, var(--warn) var(--tint), transparent);
+}
+
+.file-icon.sm {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.file-icon.sm svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* "Show photo previews": the photo in place of the file icon, as a button that opens it. */
+.file-icon.has-thumb {
+  overflow: hidden;
+  background: var(--line);
+}
+
+.file-icon.has-thumb > svg {
+  display: none;
+}
+
+.thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  cursor: zoom-in;
+}
+
+.thumb canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.thumb:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* A small magnifying glass in a preview's corner, so it's plain a tap opens it.
+   Dark behind white, so it shows on any picture, in either theme. */
+.thumb {
+  position: relative;
+}
+
+.thumb > svg.thumb-zoom {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 15px;
+  height: 15px;
+  padding: 2px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.45);
+  color: #fff;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+/* The name and size open the preview too, an easier target on a phone. */
+.item.previewable .item-meta,
+#r-file.previewable .chosen-meta {
+  cursor: zoom-in;
+}
+
+.item-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.item-meta strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.95rem;
+}
+
+.item-meta span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere; /* long MIME types */
+}
+
+/* A zip's photos, videos, audio and documents (tray.ts): rows of their own under it, a step in,
+   behind the zip's "The 14 photos inside" chevron. */
+.zip-files > .items {
+  margin-left: 22px;
+  padding-left: 12px;
+  border-left: 2px solid var(--line);
+}
+
+.item-more .zip-open {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.item-more .zip-open:hover {
+  color: var(--text);
+}
+
+/* Per-file extras in the composer: what was removed, options, a question. */
+.item-more {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding-left: 48px;
+}
+
+.item-note {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+/* What the file checks found in a received file (ui/fileWarn.ts): a line each,
+   in the warning colour, ending in an ⓘ; the whole line is a button that opens
+   #file-warn. Under a file's name in a list, and under the one file that
+   arrived on its own. */
+.file-warns {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.file-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--warn-text);
+  font: inherit;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+
+.file-warn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.file-warn .warn-sign {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+}
+
+.file-warn .warn-tail {
+  white-space: nowrap;
+}
+
+/* The "Cleaned ⓘ" chip's ⓘ at the end of the text, in the page's usual muted
+   colour rather than the warning's, and inline,
+   unlike the page's other icons, so it follows the last word. */
+.file-warn .warn-info {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+  color: var(--muted);
+}
+
+.file-warn:hover .warn-info {
+  color: var(--text);
+}
+
+/* Between the file (its .chosen box keeps 14px below it) and the Save button. */
+#r-warns {
+  margin: 0 2px 14px;
+}
+
+#file-warn-body {
+  padding-top: 6px;
+}
+
+#file-warn-body p {
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+/* "Nothing in it can run here.": first, in a box of its own, so it's seen. */
+#file-warn-body .warn-here {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+/* A zip's files with warnings: each name, and under it what was found, in the warning colour. */
+#file-warn-body .warn-files {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+#file-warn-body .warn-files li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.45;
+}
+
+#file-warn-body .warn-file {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+#file-warn-body .warn-what {
+  color: var(--warn-text);
+  font-size: 0.92rem;
+}
+
+#file-warn-body .warn-why {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+#file-warn-body .warn-more {
+  color: var(--muted);
+}
+
+/* "Cleaned ⓘ" on a cleaned file (the "i" says there's more to see;
+   it was a tick). It opens the list of what was removed
+   in place, below it, so it fits a phone and keeps its place in the tab order. */
+.cleaned {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px 0 11px;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  border-radius: 999px;
+  background: rgba(52, 211, 153, 0.1);
+  color: #6ee7b7;
+  font: 600 0.8rem var(--font);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.chip:hover,
+.chip[aria-expanded='true'] {
+  border-color: rgba(52, 211, 153, 0.65);
+  background: rgba(52, 211, 153, 0.18);
+}
+
+.chip-info {
+  width: 14px;
+  height: 14px;
+}
+
+/* "Not cleaned": the sender chose to send the original. */
+.chip.kept {
+  border-color: var(--line-strong);
+  background: var(--surface-3);
+  color: var(--muted);
+}
+
+.chip.kept:hover,
+.chip.kept[aria-expanded='true'] {
+  border-color: var(--faint);
+}
+
+
+:root[data-theme='light'] .chip:not(.kept) {
+  border-color: rgba(4, 120, 87, 0.35);
+  background: rgba(16, 185, 129, 0.1);
+  color: #047857;
+}
+
+:root[data-theme='light'] .chip:not(.kept):hover,
+:root[data-theme='light'] .chip:not(.kept)[aria-expanded='true'] {
+  border-color: rgba(4, 120, 87, 0.6);
+  background: rgba(16, 185, 129, 0.16);
+}
+
+.pop {
+  position: relative;
+  align-self: stretch;
+  max-width: 28rem;
+  padding: 11px 14px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--sheet);
+  box-shadow: 0 12px 32px -16px rgba(0, 0, 0, 0.55);
+  animation: rise 0.2s var(--ease);
+}
+
+/* A notch pointing up at the chip. */
+.pop::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 20px;
+  width: 10px;
+  height: 10px;
+  border-top: 1px solid var(--line-strong);
+  border-left: 1px solid var(--line-strong);
+  border-top-left-radius: 2px;
+  background: var(--sheet);
+  transform: rotate(45deg);
+}
+
+/* The heading, and "Change in Settings" beside it (wrapping under it on a narrow phone). */
+.pop-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 12px;
+  margin: 0 0 6px;
+}
+
+.pop-head .link-btn,
+.pop-head .soft-link {
+  font-size: 0.78rem;
+}
+
+.pop-note {
+  margin: 8px 0 0;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.pop-title {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.pop-list {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.pop-list li {
+  position: relative;
+  padding-left: 13px;
+  overflow-wrap: anywhere;
+}
+
+.pop-list li::before {
+  content: '';
+  position: absolute;
+  top: 0.6em;
+  left: 1px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--faint);
+}
+
+.pop-k {
+  color: var(--muted);
+}
+
+.pop-v {
+  color: var(--text);
+  font-weight: 550;
+  unicode-bidi: isolate;
+}
+
+.pop .opt {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  width: 100%;
+}
+
+.opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text);
+  font-size: 0.84rem;
+  cursor: pointer;
+}
+
+.opt input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #7c5cff;
+  cursor: pointer;
+}
+
+.item-ask {
+  align-self: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(251, 191, 36, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.45);
+  font-size: 0.86rem;
+}
+
+.item-ask-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+#v-compose .items,
+#v-compose .drop {
+  margin-top: 12px;
+}
+
+/* Once files are listed, the drop zone shrinks to an "add more" strip. */
+.drop.compact {
+  flex-direction: row;
+  justify-content: center;
+  padding: 14px 16px;
+}
+
+.drop.compact .drop-icon,
+.drop.compact .drop-sub {
+  display: none;
+}
+
+.drop.compact .drop-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+textarea {
+  display: block;
+  width: 100%;
+  min-height: 150px;
+  padding: 14px 16px;
+  resize: vertical;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: 0.95rem/1.5 var(--mono);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+textarea::placeholder {
+  color: var(--faint);
+}
+
+textarea.compose-text {
+  min-height: 96px;
+}
+
+/* Text boxes keep their look when tapped into: no blue highlight; the
+   caret shows where you are. A text box matches
+   :focus-visible on a tap as well as from the keyboard, so the page-wide focus ring is turned off
+   for them too. Switches, buttons and links keep theirs. */
+:is(textarea, input:not([type='checkbox'], [type='radio'], [type='file'], [type='range'], [type='button'], [type='submit'])):is(:focus, :focus-visible) {
+  outline: none;
+}
+
+/* --- Size meter ---------------------------------------------------------- */
+
+.meter {
+  margin: 16px 2px 18px;
+}
+
+.meter-track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-3);
+}
+
+.meter-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  margin-top: 8px;
+}
+
+.meter-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--grad);
+  transition: width 0.4s var(--ease);
+}
+
+.meter[data-over] .meter-fill {
+  background: var(--bad);
+}
+
+/* Over, but being made smaller to fit: a calm band going along, not the red of "too large". */
+.meter[data-working] .meter-fill {
+  width: 28% !important;
+  opacity: 0.75;
+  animation: indeterminate 1.5s var(--ease) infinite;
+}
+
+.meter-text,
+.meter-eta {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.meter[data-over] .meter-text {
+  color: var(--bad);
+}
+
+/* "Why only 2 MB?", in place of the time estimate when it's too large. */
+.meter-why {
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-underline-offset: 2px;
+}
+
+/* --- Link options: one-time and expiring links --------------------------- */
+
+.link-opts {
+  margin: -4px 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+/* Looks like a control: full-strength label, the current choice, a chevron. */
+/* "Link options" and the chevron on the first line, the current choices in
+   grey underneath: three choices don't fit beside the title on a phone, and
+   this way phones and desktops look the same. */
+.link-opts summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'title chevron'
+    'now now';
+  align-items: center;
+  gap: 2px 10px;
+  padding: 12px 14px;
+  border-radius: 13px;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.link-opts summary:hover {
+  background: var(--surface-3);
+}
+
+.link-opts summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.link-opts[open] summary {
+  border-radius: 13px 13px 0 0;
+}
+
+.link-opts summary::-webkit-details-marker {
+  display: none;
+}
+
+.link-opts summary > span:first-of-type {
+  grid-area: title;
+}
+
+/* A chevron that points down when closed and up when open. */
+.link-opts summary::after {
+  grid-area: chevron;
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin: -3px 2px 0 2px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(45deg);
+  transition: transform 0.2s var(--ease);
+}
+
+.link-opts[open] summary::after {
+  margin-top: 3px;
+  transform: rotate(-135deg);
+}
+
+.link-opts-now {
+  grid-area: now;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 400;
+}
+
+.link-opts[open] .link-opts-now {
+  display: none;
+}
+
+.link-opts-body {
+  padding: 0 14px 12px;
+}
+
+.opts-expiry {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.opts-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.opts-expiry .seg {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  align-self: flex-start;
+}
+
+.opts-expiry .seg span {
+  text-align: center;
+}
+
+/* Four choices don't fit a phone's width in one row: two rows of two. */
+@media (max-width: 440px) {
+  .opts-expiry .seg {
+    grid-template-columns: 1fr 1fr;
+    align-self: stretch;
+  }
+}
+
+.link-opts .setting {
+  padding: 12px 0;
+  border-bottom: 0;
+}
+
+.link-opts .setting + .setting {
+  border-top: 1px solid var(--line);
+}
+
+/* The one-time switch comes after the password and its box. */
+.link-opts .pw-box + .setting {
+  border-top: 1px solid var(--line);
+}
+
+/* slynk.me's rule, in place of the one-time switch: "Every Slynk link opens
+   once only… Why?", the Why opening a short answer in a popup. */
+.opts-rule {
+  margin: 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+/* "More options are available in Settings": faint, under a faint rule, last. */
+.opts-more {
+  margin: 0;
+  padding: 12px 0 2px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.opts-rule a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+
+.opts-rule a:hover {
+  color: var(--text);
+}
+
+/* --- A button inside a box's right edge --------------------------------- */
+
+/* New message's camera and the 12 words' eye: part of the box,
+   which leaves room for it on the right. */
+.field-wrap {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+/* In the words box's column, as tall as the box and no more. */
+.pw-box > .field-wrap {
+  flex: none;
+}
+
+/* The box fills it by width, whatever flex rules boxes have elsewhere, and
+   keeps room for the button over the boxes' own padding: every box with a
+   button inside it (a long passphrase ran under the eye, 2026-10-23). */
+.linkbox .field-wrap > input,
+.field-wrap > input.pw-input {
+  width: 100%;
+  min-width: 0;
+  padding-right: 44px;
+}
+
+.field-btn {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.field-btn:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.field-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.field-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* The eye: shut while the words are dots, open while they show. */
+.eye-btn[aria-pressed='true'] .eye-shut,
+.eye-btn[aria-pressed='false'] .eye-open {
+  display: none;
+}
+
+/* --- Password links ------------------------------------------------------ */
+
+/* The box, then New words and Copy on a row of their own, so five words
+   have the full width on any screen. */
+.pw-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 0 6px;
+}
+
+.pw-actions {
+  display: flex;
+  gap: 8px;
+}
+
+input.pw-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: 0.9rem var(--mono);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Words in the body font take less room than in the monospace one, so most
+   suggestions show whole on a phone. The sent screen shows it monospaced. */
+.pw-box input.pw-input {
+  flex: none;
+  font: 0.95rem var(--font);
+}
+
+/* A little more room for the words on a phone. */
+@media (max-width: 440px) {
+  .pw-box input.pw-input {
+    padding: 0 10px;
+  }
+}
+
+.sent-pw {
+  margin: 14px 0 0;
+}
+
+/* The sender may read it out, so it wraps rather than scrolling out of sight. */
+.pw-show-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pw-show {
+  flex: 1;
+  min-width: 0;
+  min-height: 50px;
+  padding: 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: 0.95rem/1.4 var(--mono);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.pw-show-row .btn {
+  height: 50px;
+  flex-shrink: 0;
+}
+
+.in-pw {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.in-pw .note {
+  margin: 0 0 4px;
+}
+
+.in-pw input.pw-input {
+  flex: none;
+  height: 50px;
+}
+
+/* As tall as the box (a column would otherwise squash it), with room for the eye. */
+.in-pw > .field-wrap {
+  flex: none;
+}
+
+.in-pw .field-wrap > input.pw-input {
+  width: 100%;
+  min-width: 0;
+  padding-right: 44px;
+}
+
+.note.pw-error {
+  margin: 0;
+  color: var(--bad);
+}
+
+/* --bad is too pale to read as small text on a light page. */
+:root[data-theme='light'] .note.pw-error {
+  color: #be123c;
+}
+
+/* --- Buttons ------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface-3);
+  color: var(--text);
+  font: 600 0.95rem var(--font);
+  cursor: pointer;
+  transition: transform 0.15s, background 0.2s, opacity 0.2s, box-shadow 0.2s;
+}
+
+/* Links styled as buttons (the About page's "Send something") aren't underlined. */
+a.btn {
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: var(--line-strong);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn.primary,
+.btn.grad-btn {
+  border: 0;
+  background: var(--grad);
+  color: var(--on-grad);
+  font-weight: 700;
+  box-shadow: 0 10px 30px -12px rgba(124, 92, 255, 0.7);
+}
+
+.btn.primary:hover,
+.btn.grad-btn:hover {
+  filter: brightness(1.06);
+}
+
+.btn.primary {
+  width: 100%;
+  height: 54px;
+  font-size: 1rem;
+}
+
+.btn.primary:disabled,
+.btn.grad-btn:disabled {
+  background: var(--surface-3);
+  color: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--line);
+  filter: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn.ghost {
+  background: transparent;
+}
+
+.btn.ghost:hover {
+  background: var(--surface-3);
+}
+
+.btn.small {
+  height: 34px;
+  padding: 0 14px;
+  font-size: 0.85rem;
+}
+
+.btn.mini {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 9px;
+  font-size: 0.82rem;
+}
+
+.btn.wide {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.spinner {
+  display: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.btn[data-waiting] .spinner {
+  display: inline-block;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.row .btn {
+  flex: 1;
+}
+
+/* --- Progress ------------------------------------------------------------ */
+
+.progress-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.progress-kicker {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.progress-pct {
+  font-size: 2.6rem;
+  font-weight: 780;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.bar {
+  position: relative;
+  /* The sheen below is sized by the track (cqw), not the fill. */
+  container-type: inline-size;
+  height: 10px;
+  margin: 10px 0 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-3);
+}
+
+.bar-fill {
+  position: relative;
+  display: block;
+  width: 0;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--grad);
+  transition: width 0.6s var(--ease);
+}
+
+/* A band of light crossing the whole track at a steady pace, seen only over the
+   fill. Sized and moved by the track's width: by the fill's, it jumped back each
+   time the fill grew. Browsers without cqw (from
+   before 2022) simply show no sheen. */
+.bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40cqw;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transform: translateX(-100%);
+  animation: sheen 1.6s infinite;
+}
+
+.bar[data-indeterminate] .bar-fill {
+  width: 28% !important;
+  animation: indeterminate 1.5s var(--ease) infinite;
+}
+
+.progress-detail {
+  min-height: 1.5em;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A download that has gone quiet: says so, with Keep waiting and Stop.
+   "Cancel this link?" asks the same way. */
+.stall,
+.confirm,
+.fit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(251, 191, 36, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.45);
+  font-size: 0.9rem;
+}
+
+.stall p,
+.confirm p,
+.fit p {
+  flex: 1 1 16em;
+  margin: 0;
+}
+
+.confirm {
+  margin-top: 16px;
+}
+
+/* "Make smaller copies", between the meter and the link options. */
+.fit {
+  margin: -4px 0 16px;
+}
+
+/* While copies are made, and once they fit: an info card like the inbox's status
+   (the line on its own looked out of place), not the amber warning. */
+.fit.room,
+.fit.busy {
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+  box-shadow: none;
+}
+
+.fit-icon {
+  display: none;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(124, 92, 255, 0.14);
+  color: var(--accent);
+}
+
+.fit.room .fit-icon,
+.fit.busy .fit-icon {
+  display: grid;
+}
+
+.fit-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.fit.busy .fit-icon svg {
+  display: none;
+}
+
+.fit.busy .fit-icon::before {
+  content: '';
+  width: 13px;
+  height: 13px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.fit.room p,
+.fit.busy p {
+  flex: 1 1 auto;
+  line-height: 1.45;
+}
+
+.fit p:focus,
+.ib-status:focus,
+.remember-warn:focus,
+.item-note:focus {
+  outline: none;
+}
+
+.stall-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Cancel at the end of a send's progress line: discreet, as it's
+   rarely wanted, and at the right edge so it stays put while the words change. */
+.progress-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stop-send {
+  flex: none;
+}
+
+/* A little more room to tap than the word itself. */
+#p-cancel {
+  margin: -6px -4px;
+  padding: 6px 4px;
+}
+
+/* A send or collect of a megabyte or more: keep the page open. An info card like the composer's. */
+.keep-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+  font-size: 0.9rem;
+}
+
+.keep-note .fit-icon {
+  display: grid;
+}
+
+.keep-note p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.fact {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.fact-label {
+  color: var(--faint);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.fact-text {
+  min-height: 3em;
+  margin: 0.4em 0 0;
+  font-size: 0.95rem;
+  transition: opacity 0.25s;
+}
+
+.fact-text.fading {
+  opacity: 0;
+}
+
+/* --- Done, incoming, failed ----------------------------------------------- */
+
+.done-badge,
+.fail-badge,
+.incoming-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  animation: pop 0.5s var(--ease);
+}
+
+.done-badge {
+  background: rgba(52, 211, 153, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.45);
+  color: var(--ok);
+}
+
+.fail-badge {
+  background: rgba(251, 113, 133, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(251, 113, 133, 0.45);
+  color: var(--bad);
+}
+
+.incoming-icon {
+  background: rgba(124, 92, 255, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(150, 140, 255, 0.45);
+  color: var(--accent);
+}
+
+.done-badge svg,
+.fail-badge svg,
+.incoming-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+#v-incoming .progress-detail {
+  margin-top: 14px;
+}
+
+.btn.collect {
+  width: 100%;
+  margin-top: 18px;
+}
+
+/* One-time links: what the recipient must know before and after opening. */
+.note.once {
+  color: var(--text);
+}
+
+/* A cancelled link stays visible, struck through, so it's clear which one went. */
+.linkbox[data-cancelled] input {
+  color: var(--faint);
+  text-decoration: line-through;
+}
+
+.cancel-result {
+  color: var(--text);
+}
+
+/* --- Link box ------------------------------------------------------------ */
+
+.linkbox {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0 4px;
+}
+
+.linkbox input {
+  flex: 1;
+  min-width: 0;
+  height: 50px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: 0.84rem var(--mono);
+  outline: none;
+}
+
+.linkbox .btn {
+  height: 50px;
+}
+
+/* "Received a Slynk link? Paste it here.", at the top of the card in a local copy only: set off
+   from the message below it, which is the card's main job. */
+.open-link {
+  margin: 0 0 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.open-link .linkbox {
+  margin: 8px 0 0;
+}
+
+.open-link .pw-error {
+  margin: 8px 0 0;
+}
+
+/* --- Received ------------------------------------------------------------ */
+
+#r-file .chosen {
+  margin: 14px 0;
+}
+
+/* Several items: a list, each message blurred in its own row. */
+#r-list .items {
+  margin-top: 14px;
+}
+
+.item.msg {
+  display: block;
+  padding: 12px;
+}
+
+.item.msg .secret {
+  margin-top: 0;
+}
+
+.item.msg .row {
+  margin-top: 10px;
+}
+
+#save-all,
+#share-all {
+  margin-top: 14px;
+}
+
+/* Save, and beside it Share where the browser can share the file: a square of the same height. */
+.save-row {
+  display: flex;
+  gap: 10px;
+}
+
+.save-row .btn.primary {
+  flex: 1;
+  width: auto;
+}
+
+.share-btn {
+  flex: none;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+}
+
+.share-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* A received file's Share and Save, side by side in its row. */
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.share-mini svg {
+  width: 17px;
+  height: 17px;
+}
+
+.secret {
+  position: relative;
+  min-height: 76px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.secret pre {
+  margin: 0;
+  max-height: 320px;
+  overflow: auto;
+  font: 0.95rem/1.5 var(--mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+  transition: filter 0.3s;
+}
+
+.secret[data-hidden='true'] pre {
+  filter: blur(9px);
+  user-select: none;
+}
+
+.reveal {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: var(--text);
+  font: 600 0.95rem var(--font);
+  cursor: pointer;
+}
+
+.reveal svg {
+  width: 20px;
+  height: 20px;
+}
+
+.secret[data-hidden='false'] .reveal {
+  display: none;
+}
+
+/* --- How it works -------------------------------------------------------- */
+
+.how {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.how-item {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.how-item svg {
+  width: 22px;
+  height: 22px;
+  color: var(--accent);
+}
+
+.how-item h3 {
+  margin: 0.6em 0 0.25em;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+}
+
+.how-item p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.footer a {
+  color: var(--muted);
+  text-underline-offset: 2px;
+}
+
+.footer a:hover {
+  color: var(--text);
+}
+
+/* The About link gets a line of its own, above the rest, and says it opens in a new tab. */
+.footer-lead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-basis: 100%;
+  font-size: 0.86rem;
+  text-align: center;
+}
+
+.footer-new-tab {
+  color: var(--faint);
+  font-size: 0.76rem;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 18px;
+  padding: 24px 16px 28px;
+  color: var(--faint);
+  font-size: 0.78rem;
+}
+
+/* --- About / FAQ page ---------------------------------------------------- */
+
+/* A calm reading column: a nearly opaque panel and no spring behind it. */
+.doc {
+  flex: 1;
+  width: min(100% - 32px, 680px);
+  margin: clamp(4px, 2vh, 24px) auto 24px;
+  padding: clamp(16px, 5vw, 44px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--sheet);
+  box-shadow: var(--shadow);
+  line-height: 1.6;
+}
+
+.doc h1 {
+  margin: 0.25em 0 0.45em;
+  font-size: clamp(2rem, 6vw, 2.8rem);
+  font-weight: 780;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.doc h2 {
+  margin: 1.9em 0 0.5em;
+  font-size: 1.22rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* No text-wrap: pretty here. Safari rebalances whole paragraphs with it,
+   which left lines well short of a phone's width (seen 2026-10-15). */
+.doc p {
+  margin: 0 0 0.9em;
+}
+
+.doc-lede {
+  color: var(--muted);
+  font-size: 1.08rem;
+}
+
+.doc-steps,
+.doc-list {
+  margin: 0 0 1em;
+  padding-left: 1.3em;
+}
+
+.doc-steps li,
+.doc-list li {
+  margin: 0.5em 0;
+}
+
+.doc li::marker {
+  color: var(--muted);
+}
+
+.doc h3 {
+  margin: 1.5em 0 0.4em;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+/* A jump to another part of this page stays on it: the faint dotted underline (see "Three kinds of
+   link"). Links that leave the page have target="_blank" and the arrow. */
+.doc a[href^='#'] {
+  color: inherit;
+  text-decoration: underline dotted;
+  text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+.doc a[href^='#']:hover {
+  text-decoration-color: currentColor;
+}
+
+/* What Slynk is and isn't, near the top: the first thing to read, so it stands out a little (an
+   accent edge and glow), each point with its icon in a tinted tile, then a smaller note on the
+   project and what the inboxes are for. */
+.manifesto {
+  margin: 1.4em 0 0;
+  padding: 1.15em 1.25em 1em;
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line-strong));
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, #b69cff 11%, transparent), transparent 60%),
+    radial-gradient(110% 90% at 100% 100%, color-mix(in srgb, #2ee6ff 8%, transparent), transparent 60%),
+    var(--surface-2);
+  box-shadow: 0 14px 34px -24px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.doc .manifesto h2 {
+  margin: 0 0 0.55em;
+  font-size: 1.08rem;
+}
+
+.manifesto ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each point: its icon beside its name and words. On a phone the words run under both, full
+   width, so they aren't squeezed beside the icon. */
+.manifesto li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: 'icon name' 'icon desc';
+  column-gap: 0.85em;
+  align-items: start;
+  margin: 0.8em 0;
+}
+
+.manifesto li > strong {
+  grid-area: name;
+}
+
+.mf-desc {
+  grid-area: desc;
+  margin-top: 0.1em;
+}
+
+.mf-icon {
+  grid-area: icon;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, #b69cff 24%, transparent), color-mix(in srgb, #2ee6ff 16%, transparent));
+  /* Lighter on the dark theme, deeper on the light one: the accent mixed with the text colour. */
+  color: color-mix(in srgb, var(--accent) 70%, var(--text));
+}
+
+.mf-icon svg {
+  width: 21px;
+  height: 21px;
+}
+
+@media (max-width: 520px) {
+  .manifesto li {
+    grid-template-areas: 'icon name' 'desc desc';
+    align-items: center;
+    row-gap: 0.35em;
+  }
+
+  .mf-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+
+  .mf-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.doc .manifesto .footnote {
+  margin: 0.9em 0 0;
+  padding-top: 0.8em;
+  border-top: 1px solid var(--line);
+  font-size: 0.88rem;
+}
+
+/* Why Slynk exists, then who links and inboxes are for: one note in two paragraphs. */
+.doc .manifesto .footnote + .footnote {
+  margin-top: 0.6em;
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* The page's main sections fold away: a heading opens its section in
+   a box. While it's open the heading stays at the top of the screen, and closing it (the heading, or
+   "Close this section" at the end) brings the list of sections back into view (about.ts). */
+.section {
+  margin: 0.75em 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+}
+
+.section:first-of-type {
+  margin-top: 1.6em;
+}
+
+/* Back at the list, it starts a little below the top of the screen. */
+.section {
+  scroll-margin-top: 16px;
+}
+
+.section > summary {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0.8em 1.1em;
+  border-radius: 15px;
+  /* Solid, so the text it passes over doesn't show through. */
+  background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
+  cursor: pointer;
+  list-style: none;
+}
+
+.section > summary::-webkit-details-marker {
+  display: none;
+}
+
+.doc .section > summary h2 {
+  margin: 0;
+  font-size: 1.12rem;
+}
+
+.section > summary::after {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.2s var(--ease);
+}
+
+.section[open] > summary {
+  border-bottom: 1px solid var(--line);
+  border-radius: 15px 15px 0 0;
+}
+
+.section[open] > summary::after {
+  transform: translateY(2px) rotate(-135deg);
+}
+
+.section > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.section-body {
+  padding: 0.9em clamp(12px, 3vw, 1.1em) 0.6em;
+}
+
+.section-body > :first-child {
+  margin-top: 0;
+}
+
+/* Something a link points to inside a section isn't hidden under its pinned heading. */
+.section [id] {
+  scroll-margin-top: 72px;
+}
+
+.section-close {
+  margin: 1.4em 0 0.4em;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+/* The questions. Only the page's own answers: "More detail" inside one is a quieter fold. */
+.faq > details {
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 24px; /* an answer opened by a link keeps a little room above */
+}
+
+.faq > details:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.faq > details > summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0.75em 0;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+
+.faq > details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq > details > summary::after {
+  content: '+';
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.faq > details[open] > summary::after {
+  content: '\2013';
+}
+
+.faq details p,
+.faq details li {
+  color: var(--muted);
+}
+
+.faq .more-about {
+  margin: 0 0 0.9em;
+}
+
+.faq .more-about > summary {
+  font-size: 0.9rem;
+}
+
+.faq .more-about > :not(summary) {
+  margin: 0.7em 0 0;
+}
+
+/* A link to a technical write-up of Slynk's published code (left out of the page until it's
+   published: scripts/source-links.ts): a small button with a page icon, to invite reading,
+   and the new-tab arrow every link that leaves the page has. */
+.source-link {
+  margin: 0 0 0.55em;
+}
+
+.doc .source-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  max-width: 100%;
+  padding: 0.5em 0.85em;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-decoration: none;
+  transition: border-color 0.15s var(--ease);
+}
+
+.doc .source-link a:hover {
+  border-color: var(--accent);
+}
+
+.doc .source-link a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.doc .source-link a::before {
+  content: '';
+  flex: none;
+  width: 1.05em;
+  height: 1.05em;
+  background: var(--accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 3v5h5M9 13h6M9 17h6'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 3v5h5M9 13h6M9 17h6'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+.doc .source-link a::after {
+  flex: none;
+  margin-left: 0;
+  opacity: 0.7;
+}
+
+.doc-back {
+  margin: 2.2em 0 0;
+  text-align: center;
+}
+
+/* "Send something with Slynk", at the end, with room around it. */
+.doc-back.doc-end {
+  margin: 3em 0 1.2em;
+}
+
+/* "Run Slynk on your computer": a row for each kind of computer, stacked: its icon, name and a short
+   note, the download buttons (with the file's size) at the right, and its fingerprint folded away
+   underneath. On a phone
+   the buttons go under the name, full width. Original icons (a window, the Mac's command key, a
+   terminal), not the companies' logos, which their owners don't let others use. */
+.downloads {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0 10px;
+}
+
+.dl-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-areas:
+    'icon head get'
+    '.    how  how'
+    '.    sums sums';
+  align-items: center;
+  gap: 6px 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: var(--surface-2);
+}
+
+.dl-icon {
+  grid-area: icon;
+  width: 36px;
+  height: 36px;
+  color: var(--accent);
+}
+
+.dl-head {
+  grid-area: head;
+  min-width: 0;
+}
+
+.dl-head h4 {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.dl-for {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+/* The buttons, one above the other (a Mac has two), all the same width. */
+.dl-get {
+  grid-area: get;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dl-get .btn {
+  white-space: nowrap;
+}
+
+/* The file's size on its button, a little quieter. */
+.dl-size {
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+/* Why Windows and macOS warn, and to check the fingerprint first: just above the downloads. */
+.dl-trust {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+/* How to open it, right by the download: the warnings an unsigned program meets, and what to click. */
+.dl-how {
+  grid-area: how;
+  margin: 4px 0 2px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+/* Each file's fingerprint, small, under the name; it wraps anywhere, in a font that tells 0 from O. */
+.dl-sums {
+  grid-area: sums;
+  min-width: 0;
+}
+
+.dl-sums p {
+  margin: 0;
+  color: var(--faint);
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+.dl-sums code {
+  display: block;
+  color: var(--muted);
+  font: 0.64rem/1.5 var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.dl-sums p + p {
+  margin-top: 4px;
+}
+
+/* On a phone, the buttons go under the name, full width. */
+@media (max-width: 600px) {
+  .dl-row {
+    grid-template-columns: 36px minmax(0, 1fr);
+    grid-template-areas:
+      'icon head'
+      'get  get'
+      'how  how'
+      'sums sums';
+  }
+
+  .dl-get {
+    margin-top: 4px;
+  }
+}
+
+.dl-note {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+/* --- Settings sheet ------------------------------------------------------ */
+
+.sheet {
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  /* On phones, 100vh includes the space behind the browser's toolbars, which
+     pushed the top of the sheet (and its close button) off screen. dvh is
+     the height actually visible. */
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 22px;
+  /* Nearly opaque: settings text must stay easy to read over the page. */
+  background: var(--sheet);
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.sheet[open] {
+  animation: rise 0.35s var(--ease);
+}
+
+.sheet::backdrop {
+  background: rgba(5, 6, 11, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.sheet-inner {
+  padding: 22px;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* The title and close button stay put while the settings scroll under them. */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: -22px -22px 0; /* over .sheet-inner's padding, edge to edge */
+  padding: 22px 22px 8px;
+  background: var(--sheet);
+}
+
+/* Focus rings follow the keyboard (main.ts sets data-input): none after a tap
+   or click, where Safari would ring a button the page focuses. Text boxes
+   keep their own focus border. */
+:root[data-input='pointer'] button:focus,
+:root[data-input='pointer'] summary:focus,
+:root[data-input='pointer'] a:focus,
+:root[data-input='pointer'] [tabindex]:focus {
+  outline: none;
+}
+
+/* A dialog opens with its title focused (screen readers hear its name); a
+   title isn't something to press, so it gets no focus ring. */
+.sheet-head h2:focus {
+  outline: none;
+}
+
+.sheet-head h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+
+.sheet-note {
+  margin: 6px 0 4px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.sheet-note a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+
+.setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  cursor: default;
+}
+
+label.setting {
+  cursor: pointer;
+}
+
+/* Settings in groups, each under a small heading like the page's eyebrows. */
+.setting-group {
+  margin: 24px 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* The first heading sits under a rule too, like those between the settings above the others. */
+.sheet-note + .setting-group {
+  margin-top: 14px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.setting-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.setting-text span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.setting-text .setting-count {
+  color: var(--text);
+}
+
+/* A choice of several under its title, rather than beside it. */
+.setting.stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.setting.stacked .seg {
+  align-self: flex-start;
+}
+
+/* A title with an ⓘ after it, which opens what the choices do below it. */
+.setting-head {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.info-btn {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  margin: -6px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.info-btn svg {
+  width: 19px;
+  height: 19px;
+}
+
+.info-btn:hover,
+.info-btn[aria-expanded='true'] {
+  color: var(--accent);
+}
+
+.info-btn:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+.info-card {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  animation: rise 0.2s var(--ease);
+}
+
+.info-card p {
+  margin: 0;
+}
+
+.info-card p + p {
+  margin-top: 4px;
+}
+
+/* Each choice named in the words, as on its button. */
+.info-card b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 46px;
+  height: 27px;
+  margin: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface-3);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: background 0.2s;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 0.25s var(--ease), background 0.2s;
+}
+
+.switch:checked {
+  border-color: transparent;
+  background: #7c5cff;
+}
+
+.switch:checked::after {
+  background: #fff;
+  transform: translateX(19px);
+}
+
+.seg {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.seg label {
+  position: relative;
+}
+
+.seg input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.seg span {
+  display: block;
+  padding: 6px 12px;
+  border-radius: 9px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.seg input:checked + span {
+  /* The switches' "on" colour, so the choice made stands out as theirs does. */
+  background: #7c5cff;
+  color: #fff;
+}
+
+.seg input:focus-visible + span {
+  outline: 2px solid var(--accent);
+}
+
+.advanced summary {
+  padding: 14px 0 4px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.check-out {
+  max-height: 220px;
+  overflow: auto;
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  font: 0.75rem/1.5 var(--mono);
+  white-space: pre-wrap;
+}
+
+.sheet-foot .btn {
+  margin-top: 18px;
+}
+
+/* --- Scanning an inbox's QR code --------------------------------------- */
+
+/* The camera's picture fills a square: the part that's read (scan.ts). */
+.scan-view {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 1;
+  margin: 12px auto 0;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #000;
+}
+
+.scan-view video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* A computer's own camera faces the visitor: shown as a mirror would. */
+.scan-view video.mirror {
+  transform: scaleX(-1);
+}
+
+/* Where to hold the code: a frame, the rest a little darker. */
+.scan-view::after {
+  content: '';
+  position: absolute;
+  inset: 7%;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+/* On an iPhone or iPad the frame is smaller (scan.ts, IOS): their camera can't focus close up in a
+   page, so the code is held further away. The whole square is still read. */
+.scan-view.ios::after {
+  inset: 25%;
+}
+
+/* An inbox's code read: the camera's off, the frame turns green with a tick, for a moment. */
+.scan-tick {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  color: var(--ok);
+}
+
+.scan-view:not(.found) .scan-tick {
+  display: none;
+}
+
+.scan-tick svg {
+  width: 72px;
+  height: 72px;
+  padding: 16px;
+  border-radius: 50%;
+  background: rgba(52, 211, 153, 0.16);
+  box-shadow: inset 0 0 0 2px rgba(52, 211, 153, 0.6);
+  animation: pop 0.3s var(--ease);
+}
+
+.scan-view.found video {
+  visibility: hidden;
+}
+
+.scan-view.found::after {
+  border-color: var(--ok);
+}
+
+.scan-line {
+  min-height: 1.5em;
+  margin: 14px 0 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.scan-line.scan-bad {
+  color: var(--bad);
+}
+
+/* Two lines on phones whatever it says, so the buttons don't jump while aiming. */
+@media (max-width: 480px) {
+  .scan-line {
+    min-height: 3.1em; /* two of its 1.55 lines */
+  }
+}
+
+/* --bad is too pale to read as small text on a light page. */
+:root[data-theme='light'] .scan-line.scan-bad {
+  color: #be123c;
+}
+
+.scan-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.scan-foot .btn {
+  flex: 1 1 auto;
+}
+
+/* --- Toast --------------------------------------------------------------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 10;
+  /* Its own width, up to the screen's less a margin: from the middle, it would otherwise wrap at half the screen. */
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 10px 18px;
+  border-radius: 999px;
+  text-align: center;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0;
+  transform: translate(-50%, 16px);
+  transition: opacity 0.25s, transform 0.25s var(--ease);
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* --- Motion -------------------------------------------------------------- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.55);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 8px rgba(251, 191, 36, 0);
+  }
+}
+
+/* From just off the left edge to just past the track's right end (2.5 bands of 40%). */
+@keyframes sheen {
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes indeterminate {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(380%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .how {
+    grid-template-columns: 1fr;
+  }
+
+  .item-more {
+    padding-left: 0;
+  }
+
+  .topbar {
+    padding: 14px 16px;
+  }
+
+  .net {
+    padding: 0 12px;
+  }
+}
+
+/* The narrowest phones (under 360 px, like the first iPhone SE): the top bar a touch smaller, so
+   the page never scrolls sideways. Should the pill's words still not fit (a larger text size),
+   they end in "…" rather than push the page wider. */
+@media (max-width: 359px) {
+  .topbar {
+    gap: 6px;
+  }
+
+  .brand {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+  }
+
+  .brand-name {
+    font-size: 1.06rem;
+  }
+
+  .top-actions {
+    gap: 5px;
+    min-width: 0;
+  }
+
+  .net {
+    gap: 5px;
+    min-width: 0;
+    height: 34px;
+    padding: 0 7px;
+    font-size: 0.75rem;
+  }
+
+  .top-actions .icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  #net-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.drop:focus-within {
+  border-color: rgba(150, 140, 255, 0.75);
+  box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.15);
+}
+
+/* QR code of the link: always dark on white with a quiet zone, so phone
+   cameras read it in either theme. */
+.qr-box {
+  margin: 4px 0 14px;
+}
+
+/* Save QR code, under the scanning note, with its own note on what a saved code is. */
+.qr-box #save-qr {
+  margin-top: 12px;
+}
+
+.qr {
+  width: min(100%, 260px);
+  margin: 0 auto 10px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  shape-rendering: crispEdges;
+}
+
+/* --- Anonymous inbox ---------------------------------------------------- */
+
+/* An owner's own name for their inbox, or one in their address book. */
+.inbox-name {
+  overflow-wrap: anywhere;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.honest {
+  margin-top: 14px;
+  padding-top: 2px;
+  border-top: 1px solid var(--line);
+}
+
+/* The owner's inbox, above the usual card. */
+.inbox-card {
+  margin-bottom: 18px;
+}
+
+.ib-head,
+.to-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ib-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ib-meta .opts-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ib-meta .inbox-name {
+  font-size: 1.15rem;
+}
+
+.ib-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.ib-share {
+  margin-top: 6px;
+}
+
+.ib-share .qr {
+  margin-top: 10px;
+}
+
+/* How opening is going, in an info card (plain text looked bland): an icon in
+   a round badge, the line, and Try again when it couldn't open. */
+.ib-status-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 14px;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.ib-status-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(124, 92, 255, 0.14);
+  color: var(--accent);
+}
+
+.ib-status-icon svg {
+  display: none;
+  width: 16px;
+  height: 16px;
+}
+
+.ib-status-card[data-state='done'] .si-done,
+.ib-status-card[data-state='failed'] .si-failed {
+  display: block;
+}
+
+/* While it connects and looks back, a small spinner says it's still working. */
+.ib-status-card[data-state='busy'] .ib-status-icon::before {
+  content: '';
+  width: 13px;
+  height: 13px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.ib-status-card[data-state='failed'] {
+  border-color: rgba(251, 191, 36, 0.45);
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.ib-status-card[data-state='failed'] .ib-status-icon {
+  background: rgba(251, 191, 36, 0.2);
+  color: var(--warn-text);
+}
+
+.ib-status {
+  flex: 1 1 14em;
+  margin: 0;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+#ib-list {
+  margin-top: 14px;
+}
+
+/* Files or a longer message to an inbox: the honest line, above Send. */
+.upload-note {
+  margin: -4px 0 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+/* An upload in an owner's inbox: Collect, then what arrived. */
+.drop-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 12px;
+}
+
+/* "Files or a longer message" wraps beside Try again on a phone, never cut off. */
+.drop-head .item-meta strong {
+  white-space: normal;
+}
+
+.drop-status {
+  display: block;
+  margin: 10px 0 0;
+}
+
+.drop-row .items {
+  margin-top: 12px;
+}
+
+.drop-row .items .item {
+  background: var(--surface);
+}
+
+.drop-row [data-part='after'] .btn {
+  flex: 0 1 auto;
+}
+
+.drop-off {
+  margin: 0;
+}
+
+/* "Send to" a long name from the address book can need two lines on a phone. */
+#send {
+  height: auto;
+  min-height: 54px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  overflow-wrap: anywhere;
+}
+
+#d-title {
+  overflow-wrap: anywhere;
+}
+
+/* The composer, addressed to an inbox. */
+.to-inbox {
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: var(--surface-2);
+}
+
+/* Arriving from New message (a scan or "Write to it"): the page lands on the card, not its
+   top, and this box lights up for a moment, so it's clear where to write. */
+#card {
+  scroll-margin-top: 16px;
+}
+
+.to-inbox.arrived {
+  animation: arrive 1.8s var(--ease);
+}
+
+@keyframes arrive {
+  0%,
+  40% {
+    border-color: rgba(150, 140, 255, 0.9);
+    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.22);
+  }
+}
+
+.to-inbox .note {
+  margin-top: 8px;
+}
+
+/* The sender's card's extras, in one quiet row. */
+.to-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+code.to-address {
+  display: block;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font: 0.8rem var(--mono);
+}
+
+/* "To a quantum-safe anonymous inbox": its (i), after the atom. */
+.to-what {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin: -4px 0 -4px 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+/* A target a finger can hit, larger than the icon looks. */
+.to-what::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+.to-what svg {
+  width: 16px;
+  height: 16px;
+}
+
+.to-what:hover {
+  color: var(--text);
+}
+
+.to-what:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Under Send, a light rule above the safety note. */
+.to-safety {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+/* Its popup: what the check found, a tick or a cross beside it. */
+.check-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0 0;
+  line-height: 1.45;
+}
+
+.check-icon {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(251, 113, 133, 0.14);
+  color: var(--bad);
+}
+
+.check-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.check-result[data-good='true'] .check-icon {
+  background: rgba(52, 211, 153, 0.14);
+  color: var(--ok);
+}
+
+:root[data-theme='light'] .check-icon {
+  color: #be123c;
+}
+
+:root[data-theme='light'] .check-result[data-good='true'] .check-icon {
+  color: #047857;
+}
+
+/* The full address, at the bottom, small and grey: only if asked for. */
+.check-full-line {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.check-full {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  margin-top: 6px;
+}
+
+.check-full code.to-address {
+  margin: 0;
+  max-height: 9.5em;
+  overflow-y: auto;
+}
+
+/* A button that reads as a link: Rename, Keep on this device, folder tools. */
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  color: var(--text);
+}
+
+.link-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Small forms in the card: the label, a folder's name, a message's title. */
+.ib-form {
+  margin-top: 12px;
+}
+
+.ib-form .linkbox {
+  margin: 6px 0 0;
+}
+
+.ib-form .linkbox input {
+  height: 40px;
+  font-family: var(--font);
+}
+
+.ib-form .linkbox .btn {
+  height: 40px;
+}
+
+
+/* Under the card while writing to an inbox: a link is for someone else. */
+.to-elsewhere {
+  margin: 16px 0 24px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* "Your inbox is kept on this device." with Open it and Forget it, above the composer. */
+.kept-card {
+  margin-bottom: 18px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+/* The way into an anonymous inbox, under the main card on the front page. */
+.inbox-entry {
+  margin-top: 18px;
+}
+
+.inbox-entry-title {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+
+.inbox-entry-lead {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.entry-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.entry-tile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s var(--ease);
+}
+
+.entry-tile:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-3);
+  transform: translateY(-1px);
+}
+
+.entry-tile:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* A soft gradient tile for the picture, in the page's colours. */
+.entry-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  background: linear-gradient(140deg, rgba(182, 156, 255, 0.26), rgba(46, 230, 255, 0.16));
+  box-shadow: inset 0 0 0 1px rgba(150, 140, 255, 0.35);
+  color: var(--accent);
+}
+
+.entry-icon svg {
+  width: 25px;
+  height: 25px;
+}
+
+.entry-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.entry-text strong {
+  font-size: 0.98rem;
+  letter-spacing: -0.01em;
+}
+
+.entry-text span {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entry-tile:hover {
+    transform: none;
+  }
+}
+
+.kept-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+}
+
+.kept-row p {
+  flex: 1 1 14em;
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Before remembering an inbox's words: what it risks, in the warning colours. */
+.remember-warn {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(251, 191, 36, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.45);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.remember-warn-title {
+  margin: 0 0 6px;
+  font-weight: 700;
+}
+
+.remember-more {
+  margin: 8px 0 0;
+}
+
+.remember-more a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+
+.remember-risks {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.remember-ask > .remember-warn {
+  margin: 0 0 12px;
+  scroll-margin-top: 16px; /* brought into sight on a phone, not flush with the screen's edge */
+}
+
+.remember-ask > .pw-input {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.remember-ask > .stall-buttons {
+  margin-top: 12px;
+}
+
+/* "Show my passphrase…": the password, then the words, in a card on top. */
+.words-show-box {
+  margin-top: 6px;
+}
+
+#words-show-words .words {
+  margin-top: 12px;
+}
+
+#words-show-copy {
+  margin-top: 10px;
+}
+
+/* The optional password for remembered words, under the warnings. */
+.remember-pw {
+  margin-top: 12px;
+}
+
+.remember-pw .field-wrap {
+  margin-top: 6px;
+}
+
+.remember-pw-again {
+  margin-top: 10px;
+}
+
+.remember-pw .field-wrap > input.pw-input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.remember-pw .note {
+  margin-top: 6px;
+}
+
+/* An inbox remembered with a password: the password, then Open, on the open screen. */
+.remembered-pw .linkbox {
+  margin-top: 6px;
+}
+
+.remembered-pw .pw-error {
+  margin-top: 6px;
+}
+
+/* The open screen's inboxes whose words this device remembers: one tap each. */
+.remembered {
+  margin: 14px 0 22px;
+}
+
+.remembered-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* "Keep your inbox on this device…": an offer, not a warning. */
+.keep-offer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(124, 92, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(150, 140, 255, 0.4);
+  font-size: 0.9rem;
+}
+
+.keep-offer p {
+  flex: 1 1 16em;
+  margin: 0;
+}
+
+.keep-offer a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+
+/* Folders: Inbox, Archive and the owner's own, with unread counts. */
+.folders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.folder {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: 600 0.84rem var(--font);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.folder:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.folder[aria-pressed='true'] {
+  border-color: rgba(150, 140, 255, 0.75);
+  background: rgba(124, 92, 255, 0.16);
+  color: var(--text);
+}
+
+.folder:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.folder-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  unicode-bidi: isolate;
+}
+
+.folder-count {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.72rem;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.folder-add {
+  border-style: dashed;
+}
+
+.folder-tools {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* The list: one row per message, no preview of the text. */
+.mail {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mail-row {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+/* Only a message that has just arrived rises into place; a redrawn list stays still. */
+.mail-item[data-new] .mail-row {
+  animation: rise 0.35s var(--ease);
+}
+
+.mail-row:hover {
+  background: var(--surface-3);
+}
+
+.mail-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.mail-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* A one-way message opened in place: its row's box grows to hold it,
+   the row's head on top, the message and what can be done to it underneath. */
+.mail-head {
+  position: relative;
+}
+
+.mail-item:is([data-open], .closing) {
+  border-radius: 12px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px rgba(150, 140, 255, 0.5);
+}
+
+.mail-item:is([data-open], .closing) .mail-row {
+  border-color: transparent;
+  background: transparent;
+}
+
+/* Growing open or shrinking away: nothing spills out while it does. */
+.mail-open.moving {
+  overflow: hidden;
+}
+
+.mail-open {
+  padding: 0 14px 14px;
+}
+
+.mail-open-body {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+/* What it says: as written, wrapping, and selectable to copy a part of it. */
+.mail-text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 0.95rem/1.55 var(--font);
+  user-select: text;
+}
+
+/* "Why can't I reply?", or the owner's own message's "Show its full address", under it. */
+.mail-open-more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.mail-open > code.to-address {
+  margin: 8px 0 0;
+}
+
+/* The owner's own message: that it didn't say who it was from, and the files' names and sizes. */
+.mail-open-body .mine-note {
+  margin: 10px 0 0;
+}
+
+.mail-open-body .bubble-files {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.mail-open-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.mail-open-actions .menu {
+  right: auto;
+  left: 0;
+}
+
+.mail-meta {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0 10px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* An empty folder: a quiet box where the list would be, so the space doesn't look broken. */
+#ib-empty {
+  margin-top: 12px;
+  padding: 18px 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  text-align: center;
+}
+
+/* Replies: who a row is from, and "Careful" when their name looks like someone else's. */
+.mail-top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mail-flag {
+  flex: none;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.16);
+  color: var(--warn-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.mail-from {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A name a sender gave, or the owner's for them: isolated, so it can't reorder what's around it. */
+.given-name {
+  unicode-bidi: isolate;
+  overflow-wrap: anywhere;
+}
+
+.name-flags {
+  display: grid;
+  gap: 6px;
+  margin: 4px 0 10px;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+/* Someone may not be who they seem: it stands out. */
+.name-flags .name-flag-careful {
+  padding: 8px 12px;
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  border-radius: 10px;
+  background: rgba(251, 191, 36, 0.08);
+  color: var(--text);
+}
+
+/* Writing to an inbox with one's own open: "Let them reply". */
+.include {
+  margin: -4px 0 12px;
+}
+
+.include .setting {
+  padding: 10px 0;
+  border-bottom: 0;
+}
+
+.include-name {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 0 4px;
+}
+
+input.include-name-input {
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: 0.95rem var(--font);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Without an inbox open: "Want a reply?" set out like the switches above it, with a button to get
+   an inbox where a switch would be, and "Already got one? Open yours" under the question. */
+.reply-hint .setting-text a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+
+.reply-hint .btn {
+  flex-shrink: 0;
+}
+
+/* A link with its joining words stays whole: the line breaks before it, never inside it. */
+#to-only a {
+  white-space: nowrap;
+}
+
+/* "Back to the front page", above an inbox screen's heading: a small rounded button with an arrow. */
+.back-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  margin-bottom: 16px;
+  padding: 0 14px 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font: 600 0.84rem var(--font);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.back-chip svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s var(--ease);
+}
+
+.back-chip:hover {
+  border-color: rgba(150, 140, 255, 0.6);
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.back-chip:hover svg {
+  transform: translateX(-2px);
+}
+
+.back-chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back-chip:hover svg {
+    transform: none;
+  }
+}
+
+/* The welcome message (inbox/mailbox.ts WELCOME): its lines as paragraphs in a message's box, the last
+   (who it's from) quieter; and the site's coil for its picture. */
+.welcome-text {
+  white-space: normal;
+}
+
+.welcome-text p {
+  margin: 0 0 10px;
+}
+
+.welcome-text p:last-child {
+  margin: 0;
+  color: var(--muted);
+}
+
+.welcome-text .mark-icon {
+  display: inline-flex;
+  vertical-align: -2px;
+}
+
+.avatar[data-kind='site'] {
+  color: var(--accent);
+}
+
+.avatar[data-kind='site'] svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* The address book, under "Send to an inbox". */
+.book {
+  margin-top: 14px;
+}
+
+.book-list {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.book-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 0 2px 2px;
+}
+
+.book-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
+#to-save .linkbox input {
+  font-family: var(--font);
+}
+
+/* "How is this different from a messaging app?" */
+.compare {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.compare-row h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.compare-row p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.compare-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.compare-row h3 {
+  grid-column: 1 / -1;
+}
+
+.compare-them {
+  color: var(--muted);
+}
+
+.compare-us {
+  padding-left: 10px;
+  border-left: 2px solid var(--accent);
+}
+
+.compare-who {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--faint);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.keep-setting {
+  margin-top: 8px;
+  border-bottom: 0;
+}
+
+.keep-setting a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+
+.step-links {
+  color: var(--muted);
+}
+
+.step-links .link-btn,
+.step-links .soft-link,
+.step-links a {
+  color: inherit;
+  /* Never broken mid-phrase: if they can't share a line, one moves down whole. */
+  white-space: nowrap;
+}
+
+#ni-label-field {
+  width: 100%;
+  margin-top: 6px;
+  font-family: var(--font);
+}
+
+#ni-label .opts-label {
+  display: block;
+  margin-top: 16px;
+}
+
+/* Creating an inbox. */
+.lead-p {
+  margin: 0 0 12px;
+}
+
+.to-inbox .note a,
+.lead-p a,
+.drop-off a,
+.step .note a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+
+#ni-copy-words {
+  margin-top: 8px;
+}
+
+.uses {
+  margin: -4px 0 12px;
+  padding-left: 1.3em;
+}
+
+.uses li {
+  margin: 2px 0;
+}
+
+.step-next {
+  margin-top: 18px;
+}
+
+/* "Back up your passphrase…" from the inbox's menu: its box's label set off from the note above it. */
+.savefile-ask > .opts-label {
+  display: block;
+  margin: 14px 0 8px;
+}
+
+/* Its Close, set apart from the backup's own buttons above it. */
+.savefile-ask > .stall-buttons,
+.blocked-ask > .stall-buttons {
+  margin-top: 16px;
+}
+
+/* Whether the backup holds the messages too (2026-10-24), between the passphrase and the password. */
+.savefile-ask > .keep-setting {
+  margin-top: 14px;
+}
+
+/* Blocked senders, from the inbox's menu (2026-10-24): a line each, Show and Unblock at its end. */
+.blocked-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+
+.blocked-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.blocked-list li:first-child {
+  border-top: none;
+}
+
+.blocked-who {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.blocked-who strong {
+  overflow-wrap: anywhere;
+}
+
+.blocked-who span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* "To read messages later…", under "Open my inbox now" on the new inbox's last step. */
+.ready-later {
+  margin: 14px 0 0;
+}
+
+/* The 12 words, numbered, in columns. */
+.words {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 16px 0 4px;
+  padding: 0;
+  list-style: none;
+  counter-reset: word;
+}
+
+.words li {
+  counter-increment: word;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface-2);
+  font: 600 0.95rem var(--mono);
+}
+
+.words li::before {
+  content: counter(word) '.';
+  display: inline-block;
+  min-width: 3.6ch;
+  color: var(--faint);
+  font-weight: 400;
+}
+
+.keyfile {
+  margin: 16px 0 0;
+}
+
+/* "Show inbox link / QR code", under the backup's fold, with a little room between them. */
+.ready-share {
+  margin: 10px 0 0;
+}
+
+/* Its tabs have less room inside the fold, beside the (i): on a phone, the fold's sides, the gaps, the
+   tabs' own padding and the (i) a little smaller, so "Quantum-safe" stays whole in any phone's font
+   (an iPhone cut it short at first, 2026-10-23), and if it still can't fit, it goes
+   on two lines rather than being cut short. */
+@media (max-width: 480px) {
+  .ready-share .link-opts-body {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .ready-share .addr-tabs-row {
+    gap: 4px;
+  }
+
+  .ready-share .addr-tabs {
+    gap: 2px;
+    padding: 2px;
+  }
+
+  .ready-share .addr-tab {
+    gap: 4px;
+    padding-right: 3px;
+    padding-left: 3px;
+    font-size: 0.84rem;
+  }
+
+  .ready-share .addr-tabs-row .addr-what {
+    width: 26px;
+    height: 26px;
+  }
+
+  .ready-share .addr-tab-name {
+    white-space: normal;
+  }
+
+  /* The quantum-safe address's dense code out to the fold's edges, as wide as it was outside it. */
+  .ready-share .qr.dense {
+    width: calc(100% + 20px);
+    margin-right: -10px;
+    margin-left: -10px;
+  }
+}
+
+.keyfile .opts-label {
+  display: block;
+  margin: 12px 0 8px;
+}
+
+/* The password box with its eye, then "Suggest a password" and "Save backup file" under it, side by
+   side, each never broken mid-label (blank, like the other password boxes). */
+.keyfile .kf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0;
+}
+
+.keyfile .kf-actions .btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 440px) {
+  .keyfile .kf-actions .btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* The words to type back, side by side (the longest is 8 letters), so Check and "Show my words
+   again" stay in sight above a phone's keyboard. */
+.check-words {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.check-word {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.check-word input.pw-input {
+  height: 40px;
+  padding: 0 10px;
+}
+
+#ni-check .step-next {
+  margin-top: 14px;
+}
+
+/* Finish and "Show phrase again" on one line, the same height, halves where the words fit. */
+.check-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.check-actions .btn {
+  flex: 1 1 0;
+  width: auto;
+  height: 54px;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+/* "abstract", the widest kind of word, still whole on the narrowest phones. */
+@media (max-width: 359px) {
+  .check-word input.pw-input {
+    padding: 0 7px;
+    font-size: 0.85rem;
+  }
+}
+
+/* "Save my passphrase", under the remember switch: an aside, not a step. */
+#ni-kf {
+  margin-top: 14px;
+}
+
+/* In a column, flex: 1 would squash the box to nothing. */
+.check-word input.pw-input,
+#v-open-inbox input.pw-input {
+  flex: none;
+  font-family: var(--font);
+}
+
+/* "Your inbox is ready", beside its tick. */
+.ready-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.ready-head .done-badge {
+  flex: none;
+  margin: 0;
+}
+
+.ready-head h2 {
+  margin: 0;
+}
+
+.ready-name {
+  margin: 10px 0 12px;
+}
+
+/* "Now pass it on to the person it's for." under "Your link is ready". */
+.sent-pass {
+  margin: 10px 0 14px;
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.ready-name .inbox-name {
+  font-size: 1.2rem;
+}
+
+#ni-qr {
+  margin-top: 14px;
+}
+
+.btn.center {
+  display: flex;
+  margin: 0 auto;
+}
+
+/* The 12 words: a password field (dots, and password managers may fill it), with Show. */
+#v-open-inbox .words-box {
+  margin-top: 6px;
+}
+
+#oi-save-note {
+  margin-top: 8px;
+}
+
+#v-open-inbox .link-opts {
+  margin: 14px 0 0;
+}
+
+#v-open-inbox .link-opts-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-pick {
+  font: 0.9rem var(--font);
+  color: var(--muted);
+}
+
+.footer-inbox {
+  flex-basis: 100%;
+  text-align: center;
+}
+
+@media (max-width: 440px) {
+  .words {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ib-head {
+    flex-wrap: wrap;
+  }
+}
+
+/* --- The inbox's screens, tidied -------------------------------------------- */
+
+/* The card's badge: an inbox tray in the page's colours. */
+.ib-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(140deg, rgba(182, 156, 255, 0.26), rgba(46, 230, 255, 0.16));
+  box-shadow: inset 0 0 0 1px rgba(150, 140, 255, 0.35);
+  color: var(--accent);
+}
+
+.ib-badge svg {
+  width: 23px;
+  height: 23px;
+}
+
+.ib-badge.small {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+}
+
+.ib-badge.small svg {
+  width: 19px;
+  height: 19px;
+}
+
+.ib-keep-state {
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.ib-actions {
+  align-items: center;
+}
+
+/* On a narrow screen the buttons go under the name rather than squeeze it. */
+.ib-head .ib-meta {
+  flex: 1 1 150px;
+}
+
+.ib-head .ib-actions {
+  margin-left: auto;
+}
+
+/* A menu under its button: Rename, Keep or Forget; a message's rarer actions; a sender's. */
+.menu-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  min-width: 210px;
+  max-width: min(300px, calc(100vw - 40px));
+  padding: 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--sheet);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  animation: rise 0.18s var(--ease);
+}
+
+/* A card with a menu open sits above the cards after it. */
+.card.menu-open {
+  z-index: 10;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--text);
+  font: 0.9rem var(--font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--surface-3);
+  outline: none;
+}
+
+.menu-item.danger {
+  color: var(--bad);
+}
+
+.menu-heading {
+  margin: 0;
+  padding: 8px 12px 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.menu-heading:not(:first-child) {
+  margin-top: 4px;
+  border-top: 1px solid var(--line);
+}
+
+/* "More" beside an opened message's buttons: three dots. */
+.btn.more-btn {
+  padding: 0 10px;
+}
+
+.btn.more-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* A sender's picture: a figure when anonymous, a letter or a number otherwise. */
+.avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(140deg, rgba(182, 156, 255, 0.3), rgba(46, 230, 255, 0.2));
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  overflow: hidden;
+}
+
+.avatar[data-kind='anonymous'] {
+  background: var(--surface-3);
+  color: var(--muted);
+}
+
+.avatar[data-kind='number'] {
+  background: var(--surface-3);
+  font-size: 0.85rem;
+}
+
+.avatar svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Unread: a dot on the picture, and the sender in bold. */
+.mail-item[data-unread] .mail-row::before {
+  content: '';
+  position: absolute;
+  left: 41px;
+  top: 10px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--sheet);
+}
+
+.mail-row {
+  position: relative;
+}
+
+.mail-top {
+  justify-content: flex-start;
+}
+
+.mail-top .mail-from {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.mail-item[data-unread] .mail-from {
+  font-weight: 700;
+}
+
+.mail-when {
+  flex: none;
+  margin-left: auto;
+  padding-left: 8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* What kind of row: a conversation, or a one-way message in or out. */
+.mail-kind {
+  display: inline-flex;
+  flex: none;
+  align-self: center;
+  margin-right: -4px;
+}
+
+.mail-kind svg {
+  width: 14px;
+  height: 14px;
+}
+
+.mail-kind[data-kind='out'] {
+  color: var(--accent);
+}
+
+.avatar[data-kind='inbox'] {
+  background: var(--surface-3);
+  color: var(--muted);
+}
+
+.mail-meta .mail-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  unicode-bidi: isolate;
+}
+
+/* Files' size beside the title, whole: the title gives way first. */
+.mail-meta [data-part='size'] {
+  flex: none;
+  white-space: nowrap;
+}
+
+#why-reply .sheet-inner > p:not(.sheet-note),
+#size-why .sheet-inner > p:not(.sheet-note),
+#addr-check-lead {
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+/* --- The inbox's own screen, and conversations as chats ---------------- */
+
+.inbox-card > .back-chip {
+  margin-bottom: 14px;
+}
+
+/* While a conversation is open, the inbox's own heading steps aside, so the
+   chat and its reply box fit a phone's screen. */
+.inbox-card[data-view='chat'] :is(.ib-head, #ib-share-box, #ib-rename-box, #ib-lock-ask, #ib-forget-ask) {
+  display: none;
+}
+
+/* The front page's inbox bar: one slim line. */
+.kept-row .ib-badge {
+  flex: none;
+}
+
+/* Several kept: a button for each one whose words are remembered, in the row with the others, wrapping. */
+.kept-row .stall-buttons {
+  flex-wrap: wrap;
+}
+
+.kept-named {
+  display: contents;
+}
+
+.kept-name {
+  max-width: 100%;
+}
+
+.kept-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kept-row p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+}
+
+/* Open in this tab, it's one slim line: the name, how many are new, Open. */
+.kept-card[data-open] {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.kept-card[data-open] .kept-row {
+  flex-wrap: nowrap;
+}
+
+/* The whole bar opens the inbox: it shows it's there to be tapped. */
+.kept-card[data-open] {
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s;
+}
+
+@media (hover: hover) {
+  .kept-card[data-open]:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.kept-card[data-open]:active {
+  transform: scale(0.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kept-card[data-open]:hover,
+  .kept-card[data-open]:active {
+    transform: none;
+  }
+}
+
+/* The name, and under it how the inbox is ("No new messages", "3 new"): both in full on a phone. */
+.kept-card[data-open] .kept-row p {
+  flex: 1 1 auto;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+}
+
+.kept-card[data-open] .bar-state {
+  white-space: nowrap;
+}
+
+.kept-card[data-open] .kept-row p strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-state {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+.bar-state[data-new] {
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-grad);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+/* On a phone, "Open it" and "Forget it" wrap under the line: centred there. */
+@media (max-width: 440px) {
+  .kept-card:not([data-open]) .kept-row > .stall-buttons {
+    flex-basis: 100%;
+    justify-content: center;
+  }
+}
+
+/* New message beside the folders while they all fit on its line; otherwise the folders move
+   under it as a group, rather than wrapping beside it and leaving a hole under the button. */
+/* The list and what works on it (New message, the folders, writing to an inbox), on a
+   tinted panel that reaches the card's edges: it stands apart from the inbox's heading
+   and notes without losing any width. */
+.ib-panel {
+  margin: 16px calc(-1 * var(--card-pad)) 0;
+  padding: 14px var(--card-pad) 16px;
+  border-block: 1px solid var(--line);
+  background: rgba(124, 92, 255, 0.06);
+}
+
+:root[data-theme='light'] .ib-panel {
+  background: rgba(124, 92, 255, 0.05);
+}
+
+/* Its rows, a shade apart from the panel. */
+.ib-panel .mail-row {
+  background: var(--surface-3);
+}
+
+:root[data-theme='light'] .ib-panel .mail-row {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.ib-panel .mail-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+:root[data-theme='light'] .ib-panel .mail-row:hover {
+  background: #fff;
+}
+
+/* Open, the whole box is the row's shade; its head lightens on hover, as a row does. */
+.ib-panel .mail-item:is([data-open], .closing) {
+  background: var(--surface-3);
+}
+
+:root[data-theme='light'] .ib-panel .mail-item:is([data-open], .closing) {
+  background: #fff;
+}
+
+.ib-panel .mail-item:is([data-open], .closing) .mail-row {
+  background: transparent;
+}
+
+.ib-panel .mail-item[data-open] .mail-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+:root[data-theme='light'] .ib-panel .mail-item[data-open] .mail-row:hover {
+  background: rgba(124, 92, 255, 0.05);
+}
+
+.ib-listbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 8px;
+}
+
+/* The folders and Select: one group, moving under New message together when they don't fit beside it;
+   inside it the folders wrap, and Select stays at the end of their first line. */
+.ib-folders-row {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ib-folders-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* The owner's own folders, on a line of their own under a small heading:
+   the card's whole width, under New message too, so there's no hole beside them. */
+.ib-listbar > .own-folders {
+  flex: 1 0 100%;
+  order: 1;
+  min-width: 0;
+  margin-top: 2px;
+}
+
+.own-folders-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+
+.ib-listbar .folders {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-top: 0;
+}
+
+.ib-compose {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.ib-compose svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* Select, at the end of the folders' line, as round as they are: a tick box and the word on a
+   computer, the tick box alone on a phone, so it fits on the line with Inbox, Archive and New folder. */
+.btn.ib-select {
+  flex: none;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  min-width: 32px;
+  margin-left: auto;
+  padding: 0 12px 0 10px;
+  border-color: var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.ib-select svg {
+  flex: none;
+  width: 17px;
+  height: 17px;
+}
+
+@media (max-width: 440px) {
+  .btn.ib-select {
+    width: 32px;
+    padding: 0;
+  }
+
+  .ib-select-word {
+    display: none;
+  }
+
+  /* A little closer, so the three folders everyone has and the tick box share a line from 375px up. */
+  .ib-listbar .folder {
+    padding: 0 10px;
+  }
+}
+
+.btn.ib-select[aria-pressed='true'] {
+  border-color: rgba(150, 140, 255, 0.75);
+  background: rgba(124, 92, 255, 0.16);
+  color: var(--text);
+}
+
+/* While selecting: a round tick box before each row's picture. */
+.mail-check {
+  display: none;
+}
+
+.mail[data-selecting] .mail-row {
+  grid-template-columns: 24px 38px minmax(0, 1fr);
+}
+
+.mail[data-selecting] .mail-check {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--line-strong);
+  border-radius: 50%;
+  color: transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.mail-check svg {
+  width: 14px;
+  height: 14px;
+}
+
+.mail[data-selecting] .mail-item[data-selected] .mail-check {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.mail[data-selecting] .mail-item[data-selected] .mail-row {
+  box-shadow: inset 0 0 0 1px rgba(150, 140, 255, 0.6);
+}
+
+/* The tick boxes pop in, and the bar rises into view (none of it where less motion is asked for). */
+.mail[data-selecting] .mail-check {
+  animation: tick-in 0.2s var(--ease);
+}
+
+.mail[data-selecting] .mail-item[data-selected] .mail-check svg {
+  animation: tick-in 0.16s var(--ease);
+}
+
+@keyframes tick-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+/* The unread dot stays on the picture, which the tick box moves along. */
+.mail[data-selecting] .mail-item[data-unread] .mail-row::before {
+  left: 77px;
+}
+
+/* The bar for what's ticked: first in the page's order, for the keyboard, but shown under the
+   list, and held at the foot of the screen while the list scrolls under it. */
+.ib-listwrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.select-bar {
+  order: 1;
+  position: sticky;
+  bottom: 12px;
+  z-index: 5;
+  animation: rise 0.3s var(--ease);
+  margin-top: 12px;
+  padding: 10px 12px 12px;
+  border-radius: 14px;
+  /* Solid, so the rows passing under it don't show through. */
+  background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
+  box-shadow: var(--shadow), inset 0 0 0 1px var(--line-strong);
+}
+
+.select-top {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-size: 0.86rem;
+}
+
+.select-count {
+  flex: 1;
+  margin: 0;
+  font-weight: 600;
+}
+
+.select-top .link-btn {
+  color: var(--muted);
+}
+
+.select-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.select-actions > * {
+  flex: 1 1 auto;
+}
+
+.select-actions .menu-wrap .btn {
+  width: 100%;
+}
+
+.select-actions .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn.danger-btn {
+  color: var(--bad);
+}
+
+/* Deeper on the light theme's grey button, to be read easily. */
+:root[data-theme='light'] .btn.danger-btn {
+  color: #be123c;
+}
+
+/* Its menu (Move to…) opens upwards, from the foot of the screen. */
+.select-bar .menu {
+  top: auto;
+  bottom: calc(100% + 6px);
+  left: 0;
+  right: auto;
+}
+
+.select-bar .confirm {
+  margin-top: 10px;
+}
+
+/* On a phone, two buttons to a line. */
+@media (max-width: 480px) {
+  .select-actions > * {
+    flex-basis: calc(50% - 3px);
+  }
+}
+
+/* On the narrowest phones, while selecting, the tick box takes the picture's place, so names aren't cut short. */
+@media (max-width: 360px) {
+  .mail[data-selecting] .mail-row {
+    grid-template-columns: 24px minmax(0, 1fr);
+  }
+
+  .mail[data-selecting] .mail-row .avatar {
+    display: none;
+  }
+
+  .mail[data-selecting] .mail-item[data-unread] .mail-row::before {
+    left: 29px;
+  }
+}
+
+/* Its step (the address to write to) goes under the whole row, and the owner's own folders: it
+   follows the button in the page's order, so a phone, where the button has a row of its own, shows
+   it straight beneath. */
+.ib-listbar > .ib-new {
+  flex-basis: 100%;
+  min-width: 0;
+  order: 2;
+  margin-top: 2px;
+}
+
+/* On a phone it's the screen's main action: a row of its own, the full width. */
+@media (max-width: 440px) {
+  .ib-compose {
+    flex-basis: 100%;
+    height: 40px;
+    font-size: 0.9rem;
+  }
+
+  .ib-listbar > .ib-new {
+    order: 0;
+    margin: 0 0 4px;
+  }
+}
+
+.ib-new .btn.ghost {
+  margin-top: 10px;
+}
+
+/* What's good to know but not needed every time, folded away. */
+.more-about {
+  margin-top: 16px;
+}
+
+.more-about summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.more-about summary::-webkit-details-marker {
+  display: none;
+}
+
+.more-about summary::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.2s var(--ease);
+}
+
+.more-about[open] summary::after {
+  transform: translateY(1px) rotate(-135deg);
+}
+
+.more-about summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.more-about > :not(summary) {
+  margin: 8px 0 0;
+}
+
+.chat-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-back {
+  flex: none;
+}
+
+.chat-who {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chat-name {
+  margin: 0;
+  overflow: hidden;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-name:focus {
+  outline: none;
+}
+
+/* "the name they gave", small and under the name, so it never breaks a line. */
+.chat-sub {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.chat .name-flags {
+  margin-top: 10px;
+}
+
+/* The conversation, oldest first, newest just above the reply box. It runs
+   down the page rather than scrolling in a box of its own, which phones
+   handle badly. The sides leave room for each message's menu button. */
+.chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 4px 40px 10px;
+  list-style: none;
+}
+
+.chat-day {
+  align-self: center;
+  margin: 10px 0 2px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.chat-note {
+  align-self: center;
+  max-width: 90%;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.bubble {
+  position: relative;
+  max-width: 100%;
+  padding: 8px 12px 6px;
+  border-radius: 16px;
+}
+
+.bubble.in {
+  align-self: flex-start;
+  border-bottom-left-radius: 6px;
+  background: var(--surface-3);
+}
+
+.bubble.out {
+  align-self: flex-end;
+  border-bottom-right-radius: 6px;
+  background: linear-gradient(140deg, rgba(182, 156, 255, 0.3), rgba(122, 162, 255, 0.24));
+}
+
+.bubble-text {
+  font-size: 0.95rem;
+  line-height: 1.42;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  unicode-bidi: plaintext;
+}
+
+.bubble-unreadable .bubble-text {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.bubble-drop .bubble-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  white-space: normal;
+}
+
+.bubble-drop .note {
+  margin: 0;
+}
+
+/* Their files, collected right in the conversation: room for the rows and their Save. */
+.bubble.in.bubble-drop {
+  width: min(100%, 420px);
+}
+
+.bubble-drop .drop-row {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+/* Inside a bubble, rows and buttons a size smaller, so names have room on a phone. */
+.bubble-drop .drop-row .items .item {
+  gap: 4px 10px;
+  padding: 8px 8px 8px 10px;
+}
+
+.bubble-drop .drop-row .items .file-icon.sm {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+}
+
+.bubble-drop .drop-row .items .file-icon.sm svg {
+  width: 15px;
+  height: 15px;
+}
+
+.bubble-drop .drop-row .items .btn {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 0.84rem;
+}
+
+.bubble-drop .drop-row [data-part='after'] {
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.bubble-drop .drop-row [data-part='after'] .btn {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 0.86rem;
+}
+
+/* On a phone, the files' icons give way to their names. */
+@media (max-width: 440px) {
+  .bubble-drop .drop-row .items .file-icon {
+    display: none;
+  }
+
+  .bubble-drop .drop-row .items .item {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+/* The message in them: plain text, as in their other messages. */
+.drop-msg {
+  font-size: 0.95rem;
+  line-height: 1.42;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  unicode-bidi: plaintext;
+}
+
+/* The owner's own files or longer message: its text, then the files by name and size. */
+.bubble-upload .bubble-text {
+  display: grid;
+  gap: 6px;
+}
+
+.bubble-msg {
+  white-space: pre-wrap;
+}
+
+.bubble-files {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  white-space: normal;
+}
+
+.bubble-files li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+}
+
+.bubble-files svg {
+  width: 15px;
+  height: 15px;
+  opacity: 0.7;
+}
+
+.bubble-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bubble-file-size {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The time, small and quiet; on the owner's own, how sending went. */
+.bubble-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 8px;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.bubble.in .bubble-meta {
+  justify-content: flex-start;
+}
+
+.bubble-state[data-state='failed'] {
+  color: var(--bad);
+}
+
+:root[data-theme='light'] .bubble-state[data-state='failed'] {
+  color: #be123c;
+}
+
+.bubble-state .link-btn {
+  font-size: inherit;
+}
+
+/* Copy and Remove: a small menu beside each message, out of the way. */
+.bubble-more {
+  position: absolute;
+  top: 50%;
+  display: inline-flex;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.bubble.in .bubble-more {
+  right: -36px;
+}
+
+.bubble.out .bubble-more {
+  left: -36px;
+}
+
+.bubble:hover .bubble-more,
+.bubble-more:focus-within,
+.bubble-more:has([aria-expanded='true']) {
+  opacity: 1;
+}
+
+/* The menu opens under the message from its inner edge, so it stays on a phone's screen. */
+.bubble > .menu {
+  top: calc(100% + 4px);
+  max-width: min(260px, calc(100vw - 48px));
+}
+
+.bubble.in > .menu {
+  right: auto;
+  left: 0;
+}
+
+.bubble.out > .menu {
+  right: 0;
+  left: auto;
+}
+
+.bubble-more .icon-btn.small {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+
+/* No hover on a touch screen: the menu button shows, faintly. */
+@media (hover: none) {
+  .bubble-more {
+    opacity: 0.6;
+  }
+}
+
+/* The reply box, under the conversation. */
+.chat-compose {
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.chat-input {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.chat-input textarea {
+  flex: 1;
+  min-height: 46px;
+  max-height: 40vh;
+  padding: 11px 14px;
+  overflow-y: auto;
+  resize: none;
+  border-radius: 14px;
+  font: 0.95rem/1.4 var(--font);
+}
+
+.chat-send {
+  flex: none;
+  height: 46px;
+  padding: 0 18px;
+}
+
+/* The paperclip (INBOX_FILES): as tall as the reply box at its smallest. */
+.chat-attach {
+  width: 40px;
+  height: 46px;
+  border-radius: 14px;
+  color: var(--muted);
+}
+
+.chat-attach:hover {
+  color: var(--text);
+}
+
+.chat-attach svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Files dragged over the inbox's screen land in the open conversation's reply. */
+.chat-compose.drag .chat-input textarea {
+  border-color: rgba(150, 140, 255, 0.75);
+  background: rgba(124, 92, 255, 0.08);
+}
+
+/* The reply's files, its meter and the honest line, above the reply box. */
+.chat-tray {
+  margin-bottom: 10px;
+}
+
+.chat-tray .meter {
+  margin: 12px 2px 0;
+}
+
+.chat-tray .fit {
+  margin: 12px 0 0;
+}
+
+.chat-tray .upload-note {
+  margin: 12px 0 0;
+}
+
+.chat-room,
+.chat-as {
+  margin: 6px 2px 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.chat-room[data-over] {
+  color: var(--warn-text);
+}
+
+.chat-as .link-btn,
+.chat-room .link-btn {
+  font-size: inherit;
+}
+
+.chat .ib-form,
+.chat .confirm {
+  margin-top: 10px;
+}
+
+/* On a phone the menus' buttons sit inside the conversation's edges. */
+@media (max-width: 440px) {
+  .chat-log {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+
+  .bubble.in .bubble-more {
+    right: -32px;
+  }
+
+  .bubble.out .bubble-more {
+    left: -32px;
+  }
+}
+
+/* --- Touch screens ------------------------------------------------------- */
+
+/* iPhones zoom the page into any text box whose text is under 16px, and stay
+   zoomed. On touch screens, the message, link and password boxes use 16px.
+   Last in the file, so it wins over their own rules above. */
+@media (pointer: coarse) {
+  textarea,
+  .chat-input textarea,
+  .linkbox input,
+  input.pw-input,
+  .pw-box input.pw-input,
+  input.include-name-input {
+    font-size: 16px;
+  }
+}
+
+/* A fingertip needs a little more than the "Cleaned" chip's 26px. */
+@media (pointer: coarse) {
+  .chip {
+    height: 30px;
+    padding: 0 12px 0 13px;
+  }
+}
+
+/* "Show photo previews": a photo as it will be sent, fitted or zoomed in
+   (one of its pixels to one of the page's), panned by scrolling. */
+.viewer {
+  width: calc(100vw - 24px);
+  max-width: 1100px;
+  height: calc(100dvh - 24px);
+  max-height: 900px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  /* Solid: the page showing through would get in the way of judging the photo. */
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.viewer[open] {
+  display: flex;
+  flex-direction: column;
+  animation: rise 0.35s var(--ease);
+}
+
+.viewer::backdrop {
+  background: rgba(5, 6, 11, 0.7);
+}
+
+/* While the viewer is open, the page behind it doesn't scroll (photoView.ts; seen on an iPhone):
+   a swipe on a photo that fits went through to it. Its own open state says so, so it can't be left on. */
+html:has(#photo-view[open]),
+html:has(#photo-view[open]) body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.viewer-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.viewer-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.viewer-meta h2 {
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.viewer-meta h2:focus {
+  outline: none;
+}
+
+.viewer-meta span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.viewer-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.viewer-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border-radius: 0 0 18px 18px;
+}
+
+/* Auto margins centre it, and once it's bigger than the box it starts at the top left, so all of it can be scrolled to. */
+.viewer-body canvas {
+  flex-shrink: 0;
+  margin: auto;
+  cursor: zoom-in;
+}
+
+.viewer-body.actual canvas {
+  cursor: zoom-out;
+}
+
+/* A video, fitted to the viewer, with controls of Slynk's own (photoView.ts): an iPhone's own darken the
+   whole picture while they show. A play button over it while paused, tap the
+   picture to play or pause, and a bar under it to see where it is and go elsewhere. */
+.video-view {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* a tall video never spills over its bar */
+  background: #000;
+  cursor: pointer;
+}
+
+.viewer-body video {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.video-big {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(10, 12, 22, 0.55);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.video-big svg {
+  width: 30px;
+  height: 30px;
+  margin-left: 3px;
+}
+
+.video-view.playing .video-big {
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+}
+
+.video-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.video-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.video-btn .i-pause,
+.video-view.playing .video-btn .i-play {
+  display: none;
+}
+
+.video-view.playing .video-btn .i-pause {
+  display: block;
+}
+
+/* Taller than it looks, so a finger finds it. */
+.video-track {
+  position: relative;
+  flex: 1;
+  height: 28px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.video-track::before,
+.video-fill {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.video-track::before {
+  content: '';
+  right: 0;
+  background: var(--line);
+}
+
+.video-fill {
+  width: 0;
+  background: var(--accent);
+}
+
+.video-track:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.video-time {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Full screen is black whatever the theme: the bar takes the dark theme's colours. */
+.video-view:fullscreen {
+  --surface: rgba(16, 18, 30, 0.66);
+  --line: rgba(255, 255, 255, 0.16);
+  --line-strong: rgba(255, 255, 255, 0.2);
+  --text: #eef0f8;
+  --muted: #9aa0b5;
+  background: #000;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-big {
+    transition: none;
+  }
+}
+
+/* A song or other audio: its outline (a waveform), filling in as it plays, tapped to go to a moment, and the browser's own player under it. */
+.audio-view {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: min(100%, 720px);
+  margin: auto;
+  padding: 24px 16px;
+}
+
+.audio-view canvas {
+  display: block;
+  width: 100%;
+  height: 140px;
+  margin: 0;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.audio-view audio {
+  display: block;
+  width: 100%;
+}
+
+/* --- An inbox's two addresses as tabs -----------------------------------------------------
+   Only where an address is shared: the ready screen and the inbox's Share, each with its marker. */
+.addr-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.addr-tab {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 8px 6px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.addr-tab-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.addr-tab[aria-selected='true'] {
+  background: var(--surface-3);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--text);
+}
+
+.addr-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.addr-tabs-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 14px 0 2px;
+}
+
+.addr-tabs-row .addr-tabs {
+  flex: 1;
+  min-width: 0;
+}
+
+.addr-tabs-row .addr-what {
+  width: 30px;
+  height: 30px;
+}
+
+/* On a phone the tabs keep to one line: a touch smaller, and on the narrowest, two lines. */
+@media (max-width: 400px) {
+  .addr-tab {
+    font-size: 0.86rem;
+  }
+}
+
+@media (max-width: 340px) {
+  .addr-tab-name {
+    white-space: normal;
+  }
+}
+
+/* In Share, the tabs sit at the top of what it opens. */
+.ib-share .addr-tabs-row {
+  margin-top: 0;
+}
+
+/* --- The markers: a padlock (secure) or an atom (quantum-safe) ------------------
+   On every row, message and conversation, and beside the inbox written to. Tapped, one says
+   what it means in a note under it (marker.ts). Beside words that say it already, the icon alone. */
+.mark {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+
+.mark-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+/* A target a finger can hit, larger than the icon looks. */
+.mark-btn::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+.mark-btn:hover {
+  color: var(--text);
+}
+
+.mark-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.mark-icon {
+  display: inline-flex;
+  flex: none;
+  color: var(--muted);
+}
+
+.mark-btn svg,
+.mark-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.mark[data-qs='true'] .mark-btn,
+.mark-icon[data-qs='true'] {
+  color: var(--accent);
+}
+
+.mark-note {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: -10px;
+  z-index: 25;
+  display: block;
+  width: max-content;
+  max-width: min(270px, calc(100vw - 48px));
+  padding: 9px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--sheet);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.45;
+  text-align: left;
+  text-transform: none;
+  white-space: normal;
+  animation: rise 0.18s var(--ease);
+}
+
+.mark[data-side='start'] .mark-note {
+  right: auto;
+  left: -10px;
+}
+
+.mark-note .soft-link {
+  font-size: inherit;
+}
+
+/* A note under something tapped (ui/tip.ts): a document that can't be shown here. Looks like a marker's note. */
+.tip-note {
+  position: fixed;
+  z-index: 60;
+  display: block;
+  width: max-content;
+  max-width: min(280px, calc(100vw - 24px));
+  padding: 9px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--sheet);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  color: var(--text);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  animation: rise 0.18s var(--ease);
+}
+
+/* A PDF's page buttons on the page's sides, halfway down (seen on an iPhone, 2026-10-24):
+   along the bottom, Safari took the first tap to bring back its toolbar. */
+.pv-turn {
+  position: absolute;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  box-shadow: var(--shadow);
+  transform: translateY(-50%);
+}
+
+.pv-prev {
+  left: 8px;
+}
+
+.pv-next {
+  right: 8px;
+}
+
+.pv-turn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* A document shown as its text (docview/, 2026-10-24): a sheet of paper, white in either theme
+   as a PDF's pages are, that scrolls. */
+.viewer-body.doc {
+  display: block;
+}
+
+.doc-view {
+  padding: 12px 12px 24px;
+}
+
+.doc-note {
+  max-width: 760px;
+  margin: 0 auto 10px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.doc-page {
+  max-width: 760px;
+  margin: 0 auto 12px;
+  padding: 28px 30px;
+  border-radius: 6px;
+  background: #fff;
+  color: #1d1f27;
+  font-family: system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  tab-size: 4;
+  user-select: text;
+}
+
+.doc-p {
+  min-height: 1.5em;
+  margin: 0 0 0.5em;
+}
+
+.doc-p.doc-plain {
+  margin: 0;
+  /* Each line in its own direction, as a text editor shows Arabic or Hebrew. */
+  unicode-bidi: plaintext;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.88em;
+}
+
+.doc-table-wrap {
+  max-width: 100%;
+  margin: 0 0 0.8em;
+  overflow-x: auto;
+}
+
+.doc-table {
+  border-collapse: collapse;
+}
+
+.doc-table td {
+  min-width: 4em;
+  padding: 4px 8px;
+  border: 1px solid #c9ccd6;
+  /* Words stay whole in a cell, so a wide table scrolls rather than breaking them letter by letter. */
+  overflow-wrap: break-word;
+  vertical-align: top;
+}
+
+.doc-table .doc-p {
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .doc-page {
+    padding: 18px 16px;
+  }
+}
+
+/* A card with a marker's note open sits above the cards after it. */
+.card.note-open {
+  z-index: 10;
+}
+
+/* A row's marker, over the end of its second line: beside the row's button, which can't hold another. */
+.mail-item {
+  position: relative;
+}
+
+.mail-meta {
+  padding-right: 22px;
+}
+
+.mail-mark {
+  position: absolute;
+  right: 13px;
+  bottom: 12px;
+  display: inline-flex;
+}
+
+/* In a message, after its time. */
+.bubble-meta .mark-btn {
+  width: 14px;
+  height: 14px;
+}
+
+.bubble-meta .mark-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+.bubble-meta .mark {
+  align-self: center;
+}
+
+/* A conversation's, beside its name at the top of the chat. */
+.chat-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.chat-name-row .chat-name {
+  min-width: 0;
+}
+
+.chat-mark {
+  display: inline-flex;
+  flex: none;
+}
+
+/* The inbox written to: after "To an anonymous inbox", in the line's flow, so it follows a label that wraps. */
+.to-kind {
+  font-size: 0.78rem; /* the label's, so its lines keep their spacing */
+}
+
+.to-mark {
+  display: inline-flex;
+  margin: -4px 0 -4px 6px;
+  vertical-align: middle;
+}
+
+/* In the explainer's words, after "a padlock" and "an atom". */
+.qs-why-body .mark-icon {
+  vertical-align: -2px;
+}
+
+.qs-why-body .mark-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* New message: which kind of inbox the box holds. */
+.new-kind {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.addr-panel {
+  margin-top: 14px;
+}
+
+/* "What's a quantum-safe inbox?" under the quantum-safe tab's lead, a line below it, not touching it. */
+.qs-what {
+  margin: 12px 0 12px;
+  font-size: 0.9rem;
+}
+
+/* A quantum-safe address's code has four times the squares: shown larger, so a phone can read it off the screen. */
+.qr.dense {
+  width: min(100%, 360px);
+}
+
+code.to-address.long {
+  max-height: 9.5em;
+  overflow-y: auto;
+}
+
+.qs-why-body h3 {
+  margin: 18px 0 6px;
+  font-size: 1rem;
+}
+
+.qs-why-body p {
+  margin: 0 0 10px;
+  line-height: 1.5;
+}

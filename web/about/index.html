@@ -1,0 +1,1472 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="description" content="What Slynk is for, how it works, how private it is, and its honest limits." />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="icon" href="/favicon.svg" />
+    <title>About Slynk</title>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Slynk home">
+          <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+            <defs>
+              <linearGradient id="brand-g" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#b69cff" />
+                <stop offset="1" stop-color="#2ee6ff" />
+              </linearGradient>
+            </defs>
+            <g fill="none" stroke="url(#brand-g)" stroke-width="5" stroke-linecap="round">
+              <ellipse cx="17" cy="32" rx="6" ry="18" transform="rotate(-18 17 32)" />
+              <ellipse cx="27" cy="32" rx="6" ry="18" transform="rotate(-18 27 32)" />
+              <ellipse cx="37" cy="32" rx="6" ry="18" transform="rotate(-18 37 32)" />
+              <ellipse cx="47" cy="32" rx="6" ry="18" transform="rotate(-18 47 32)" />
+            </g>
+          </svg>
+          <span class="brand-name">Slynk</span>
+        </a>
+        <a class="btn small ghost" href="/">Send something</a>
+      </header>
+
+      <!--
+        Plain English first, understandable by most of the general
+        public: each answer starts with what most people need, and the rest folds under "More
+        detail". The technical answers are under "In more depth". Facts here must be true: check them
+        against the code. Many tests in web/test/ check sentences here word for word.
+
+        A "source-link" paragraph links to a file of Slynk's published code (a technical write-up,
+        say), named by its data-source attribute. The build fills in its address, or leaves it out while the code
+        isn't published yet (src/site.ts SOURCE_URL, scripts/source-links.ts).
+      -->
+      <main class="doc">
+        <p class="eyebrow">About &amp; FAQ</p>
+        <h1>A private place to pass things on</h1>
+        <p class="doc-lede">
+          Slynk turns a private message, a few files, or both into a single link. No account<span class="on-web">, nothing to install</span>, and
+          Slynk never receives what you send, so it can’t keep a copy.
+        </p>
+
+        <section class="manifesto" aria-labelledby="manifesto-title">
+          <h2 id="manifesto-title">What Slynk is, and isn’t</h2>
+          <!-- Each point with an icon in a tinted tile: a link, many lines into one inbox, a shield (where privacy and safety
+               matter most), a silenced bell (nothing pushed to you). -->
+          <ul class="manifesto-points">
+            <li>
+              <span class="mf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4l-1.1 1.1" /><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.1-1.1" /></svg></span>
+              <strong>One to one, with a link.</strong> <span class="mf-desc">Turn a message or a few files into a link<!-- when ONE_TIME_ONLY --> that opens once<!-- /when -->.</span>
+            </li>
+            <li>
+              <span class="mf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3.5 10.2 9.5M12 3v6.5M19 3.5l-5.2 6" /><path d="M3.5 13.5h4.6l1.6 2.5h4.6l1.6-2.5h4.6" /><path d="M3.5 13.5V19a1.5 1.5 0 0 0 1.5 1.5h14a1.5 1.5 0 0 0 1.5-1.5v-5.5" /></svg></span>
+              <strong>Many to one, for organisations.</strong>
+              <span class="mf-desc">An anonymous inbox lets people reach an organisation in
+                confidence, with no account, name or email address.</span>
+            </li>
+            <li>
+              <span class="mf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2 5 6v5.6c0 4.3 2.9 7.7 7 9.2 4.1-1.5 7-4.9 7-9.2V6Z" /><path d="m9 12.2 2.1 2.1 4-4" /></svg></span>
+              <strong>Not a messenger.</strong>
+              <span class="mf-desc">Slynk isn’t trying to replace your messaging apps. It’s a place to go when
+                privacy and safety matter most.</span>
+            </li>
+            <li>
+              <span class="mf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.3 4.5A6 6 0 0 1 18 9.8v2.9c0 1.3.4 2.5 1.1 3.5" /><path d="M16.2 17.5H4.9A6.6 6.6 0 0 0 6 13.8V9.8c0-.7.1-1.4.4-2" /><path d="M10 20.3a2.2 2.2 0 0 0 4 0" /><path d="M3.5 3.5l17 17" /></svg></span>
+              <strong>A closed loop, by design.</strong>
+              <span class="mf-desc">Nothing arrives by email, text or notification on your phone:
+                Slynk doesn’t know who you are, so it has no way to reach you.</span>
+            </li>
+          </ul>
+          <p class="footnote">
+            In everyday life we take privacy for granted: a sealed letter, a quiet word with someone. Online, nearly
+            everything we send passes through companies that can see who we talk to, when and from where, and can be made
+            to hand that over. Slynk is a small digital privacy project that aims to bring that everyday privacy online:
+            free, open source, and without accounts, ads or tracking.
+          </p>
+          <p class="footnote">
+            Links are for the small things that matter most, like family sharing a password or a source getting a
+            document to a journalist. Anonymous inboxes are for people who need to reach an organisation without anyone
+            seeing them do it, such as someone contacting a refuge, or staff raising a concern, from any browser.
+          </p>
+        </section>
+
+        <details class="section" id="how">
+          <summary><h2>How it works</h2></summary>
+          <div class="section-body">
+            <ol class="doc-steps">
+              <li>
+                <strong>Encrypted in your browser.</strong> Before anything leaves your device, Slynk encrypts it with a new
+                random key. The key travels only inside the link.
+              </li>
+              <li>
+                <strong>Mixed by the xx network.</strong> It goes as small pieces, all the same size, shuffled in with
+                everyone else’s, so it’s hard to tell which came from whom.
+              </li>
+              <li>
+                <strong>Held for collection.</strong> The network keeps the pieces for up to three weeks, so you and your
+                recipient don’t need to be online at the same time.
+              </li>
+              <li>
+                <strong>Opened by the recipient.</strong> Their browser collects the pieces, checks nothing was changed, and
+                decrypts them. Nobody in between can.
+              </li>
+            </ol>
+            <p><span class="on-web">Each visit uses</span><span class="on-local">Each time Slynk’s window opens, it uses</span> a brand-new, temporary identity on the network, which lives only in the <span class="on-web">tab</span><span class="on-local">window</span> and is gone when you close it.</p>
+            <p class="section-close"><button class="link-btn" type="button" data-close-section>Close this section</button></p>
+          </div>
+        </details>
+
+        <details class="section" id="private">
+          <summary><h2>How private is it?</h2></summary>
+          <div class="section-body">
+            <h3>Compared with messaging apps</h3>
+            <p>
+              Most of the big messaging apps need your phone number, and many show it, or your real name, to the people you
+              message. Most now encrypt what you say so the company can’t read it, though not all do by default, and a cloud
+              backup may not be covered. But their computers carry every message, so they see when it goes, to whom, from
+              which internet address and, usually, who sent it. Some keep such records, and can be made to hand them over.
+            </p>
+            <p>
+              Slynk asks for no number, name, email or account. What you send is encrypted in your browser, and the xx
+              network shuffles everyone’s messages together, so it’s hard to tell who sent what to whom, and when. To link a
+              sender to a recipient, someone would have to go out of their way to record traffic on part of the network, and
+              even then they’d get internet addresses, not names or numbers (with a VPN, only the VPN’s).
+            </p>
+            <p>
+              Slynk is newer, though: it hasn’t been checked by independent security experts yet, the crowd that protects you
+              is still small, and <span class="on-web">like any website, the page comes from slynk.me each time you visit (see
+              <a href="#verify">How can I check this is the published code?</a>)</span><span class="on-local">the desktop app is only as sound as the file you downloaded: check its fingerprint against the one on Slynk’s page on GitHub</span>.
+            </p>
+
+            <h3>What’s always protected</h3>
+            <ul class="doc-list">
+              <li><strong>What you send.</strong> Without the link, nobody can open it: not Slynk, and not the network carrying it.</li>
+              <li><strong>Who you are.</strong> No account, phone number or email.</li>
+              <li>
+                <strong>Nothing kept.</strong> Slynk never sees what you send, let alone keeps it, and your browser keeps nothing unless you ask it
+                to remember your settings or keep your anonymous inbox.
+              </li>
+              <li><strong>No tracking.</strong> No ads, analytics or cookies.</li>
+              <li>
+                <strong>Hidden details.</strong> Slynk removes hidden details from most photos, videos and documents before sending,
+                like where a photo was taken, right on your own device.
+              </li>
+            </ul>
+
+            <h3 id="slynk-sees">What slynk.me sees</h3>
+            <p>As little as it can, by design.</p>
+            <ul class="doc-list">
+              <li class="on-local">
+                <strong>No visits.</strong> The desktop app runs from your own computer, so slynk.me’s website never sees you.
+              </li>
+              <!-- release -->
+              <li class="on-web">
+                <strong>Nothing at all, from the desktop app.</strong> Slynk run from your own computer (see
+                <a href="#download">Run Slynk on your computer</a>) never touches slynk.me’s website: nothing is fetched from
+                it, so there’s no visit for it to see. The app still talks to the key server, cover requests included.
+              </li>
+              <!-- /release -->
+              <!-- when !VISIT_LOGS -->
+              <li class="on-web">
+                <strong>No visit logs.</strong> When you use slynk.me’s website, it keeps no record of visits: not your
+                internet address, not when you came, not what you loaded. (Its hosting provider can still see connections: see
+                <a href="#honest-limits">The honest limits</a>.)
+              </li>
+              <!-- /when -->
+              <li class="on-web">
+                <strong>The same files for every visit.</strong> Every visit to the website loads all of Slynk at the start,
+                whatever you go on to do, so what a visit loads can’t show what you did, such as sending a file or writing to an inbox.
+              </li>
+              <li>
+                <strong>A key server of its own, for one-time<!-- when !ONE_TIME_ONLY --> and expiring<!-- /when --> links</strong>, apart from the website.
+                slynk.me never knows what’s in a link, and keeps no record of who opens which one. Its half of the key lives on
+                slynk.me’s own key server, only in its memory: never logged, not written to its disk while it runs, and deleted
+                once the link is used up, cancelled or expired (within about an hour at most). It stores no internet addresses, and files each half under
+                a code that can’t be turned back into the link.
+              </li>
+              <li>
+                <strong>Requests that all look alike.</strong> To anyone watching, every answer from the key server is the same
+                size and takes at least a tenth of a second, whatever happened. Your page also sends it the odd empty request,
+                which looks just like a real one, so nobody watching can tell which visitors sent or opened a link. (You can turn
+                these off in Settings, under Cover requests.)
+              </li>
+            </ul>
+
+            <h3 id="honest-limits">The honest limits</h3>
+            <p>No privacy tool is perfect. Here’s what Slynk can’t do.</p>
+            <ul class="doc-list">
+              <li>
+                <strong>Whoever has the link can open it.</strong> Email and chat services can read links sent through them,
+                and some open them to preview them. For more safety, add a password under Link options and pass it on
+                separately.
+              </li>
+              <li>
+                <strong>The network can see you using it.</strong> The mixnet can see your internet address, and when and how
+                much you send. Never what’s inside.
+              </li>
+              <li>
+                <strong>Mixing works best in a crowd.</strong> While the network is quiet, someone running part of it could
+                sometimes match a large upload to its later download, from their size and timing. They still couldn’t open
+                it, and short messages are much harder to match.
+              </li>
+              <li><strong>Size shows.</strong> The number of pieces shows roughly how much you sent.</li>
+              <!-- when VISIT_LOGS -->
+              <li class="on-web">
+                <strong>slynk.me’s hosting provider keeps standard visit logs</strong> for the website itself (internet address
+                and time), like any website’s. They never include your link, what you send, or which visits made or opened a
+                link. And every visit loads everything Slynk needs at the start, so they can’t show what you did with it either.
+              </li>
+              <!-- else -->
+              <li class="on-web">
+                <strong>The website’s hosting provider can see connections.</strong> slynk.me’s website keeps no visit logs, but
+                its hosting provider, like any network your connection passes through, can see that your internet address
+                connected, and when. Never what you send, or which links you open.
+              </li>
+              <!-- /when -->
+              <li class="on-local">
+                <strong>It doesn’t update itself.</strong> The desktop app stays exactly as you downloaded it, so fixes and new
+                features reach it only when you download a newer version, from slynk.me’s About page.
+              </li>
+              <li><strong>It’s slow by design.</strong> About 8 KB a second, so the full 2 MB takes about four minutes.</li>
+              <li>
+                <strong>It’s new.</strong> Independent security experts haven’t checked it yet. Its code and technical
+                write-ups are open for anyone to check and help improve (see <a href="#open-source">Is Slynk open source?</a>).
+              </li>
+            </ul>
+
+            <h3>More privacy, if you need it</h3>
+            <ul class="doc-list">
+              <li>
+                <strong>Use a VPN</strong>, so <span class="on-web">slynk.me’s website and key server, their hosting providers and the xx network</span><span class="on-local">slynk.me’s key server, its hosting provider and the xx network</span> see the
+                VPN’s address instead of yours.
+              </li>
+              <!-- release -->
+              <li class="on-web">
+                <strong>Run Slynk from your own computer</strong>, so you never visit slynk.me’s website at all (see
+                <a href="#download">Run Slynk on your computer</a>).
+              </li>
+              <!-- /release -->
+              <li><strong>Share the link in person, or through an encrypted app you trust</strong>, not by email or social media.</li>
+              <li class="on-local">
+                <strong>Paste the links you receive into the desktop app</strong>, rather than clicking them. A Slynk link you click
+                opens on slynk.me in your usual browser, whose history keeps it (a private window there forgets it once
+                closed); one pasted or scanned into “Received a Slynk link?” goes into no history at all.
+              </li>
+              <li class="on-web" id="private-window">
+                <strong>Use a private window</strong> on a device someone else may look at. Your browser’s history keeps the
+                Slynk links you open (an inbox’s address is one too), even after the page clears them from the address
+                bar; a private window forgets them once it’s closed.
+              </li>
+              <li>
+                <strong>Turn on Cover messages</strong> in Settings: while your <span class="on-web">tab</span><span class="on-local">window</span> is connected to the xx network, it sends
+                the odd blank message through it, so it’s harder to tell when you send something real.
+              </li>
+              <li>
+                <strong>Keep Cover requests on</strong> in Settings (they’re on unless you switch them off). They make your page’s
+                requests to slynk.me’s key server look alike, so nobody watching can tell which visitors sent or opened a link.
+              </li>
+              <li>
+                <strong>Use plain file names.</strong> If a file’s name gives away when or on what it was made, turn on
+                “Plain file names” in Settings.
+              </li>
+              <li>
+                <strong>Scan QR codes with your phone’s own camera</strong>, not a scanner app: whatever reads the code gets
+                the link.
+              </li>
+            </ul>
+            <p class="source-link" data-source="docs/findings/one-time-links.md"><a target="_blank" rel="noopener noreferrer">One-time links, the key server and cover requests</a></p>
+            <p class="source-link" data-source="docs/findings/gateway-metadata.md"><a target="_blank" rel="noopener noreferrer">What the xx network’s computers can see</a></p>
+            <p class="source-link" data-source="docs/findings/decisions.md"><a target="_blank" rel="noopener noreferrer">The privacy choices behind Slynk, and why</a></p>
+            <p class="section-close"><button class="link-btn" type="button" data-close-section>Close this section</button></p>
+          </div>
+        </details>
+
+        <!-- release -->
+        <!-- A copy of Slynk to run on your own computer, with the latest release's downloads (here
+             rather than on a page of its own, so the site's pages stay two). Left out of the built
+             page until there's a release (scripts/release.ts, src/site.ts RELEASE). -->
+        <details class="section" id="download">
+          <summary><h2>Run Slynk on your computer</h2></summary>
+          <div class="section-body">
+            <p>
+              <span class="on-web">You can download Slynk and run it from your own computer instead of from slynk.me.</span><span class="on-local">This is Slynk run from your own computer, instead of from slynk.me.</span> It’s the same Slynk, with the
+              same encryption and the same mixnet, in a window of its own.
+            </p>
+            <h3>What’s different</h3>
+            <ul class="doc-list">
+              <li>
+                <strong>No visits to slynk.me’s website.</strong> The page comes from your own computer, so slynk.me’s website and
+                its hosting provider never see you visit.
+              </li>
+              <li>
+                <strong>The code stays as you downloaded it.</strong> Nobody can change it from one day to the next, and you can
+                check it’s the official one (below).
+              </li>
+              <li>
+                <strong>A window of its own.</strong> With Chrome, Edge or Brave on your computer, Slynk opens in its own window,
+                with no address bar, no browser extensions (which can read pages), no account signed in, and its history kept
+                apart from your everyday browsing. Otherwise it opens in your usual browser. Closing it stops Slynk.
+              </li>
+              <li>
+                <strong>Paste or scan the links you receive.</strong> A link you click opens on slynk.me in your browser. To open
+                it in the desktop app instead, paste it into “Received a Slynk link?” at the top of its page, or scan its QR code
+                with the camera button there (a photo or screenshot works too): it then never goes near slynk.me’s website, or
+                your browser’s history. An inbox’s address opens the same way.
+              </li>
+              <li>
+                <strong>Its own inbox and settings.</strong> An inbox kept on slynk.me isn’t kept in the desktop app, or the other way
+                round: unlock it there once with its passphrase.
+              </li>
+              <li>
+                <strong>Inbox only, nothing but the xx network.</strong> Use only an inbox and switch Cover requests off in
+                Settings, and the desktop app talks to nothing but the xx network: its directory, the service that admits each
+                new connection, and its gateways. slynk.me’s key server hears from it only when you make, open or cancel a
+                link.
+              </li>
+            </ul>
+            <h3>What stays the same</h3>
+            <ul class="doc-list">
+              <li>
+                <strong>It still needs the internet.</strong> The xx network’s computers still see your internet address, and
+                slynk.me’s key server still holds its half of each one-time<!-- when !ONE_TIME_ONLY --> or expiring<!-- /when --> link’s key, in its memory only, and gets your
+                cover requests. So it can’t work offline, and a VPN still helps.
+              </li>
+              <li><strong>Links you make start with https://slynk.me</strong>, so anyone can open them, with or without the desktop app.</li>
+              <li><strong>For computers only:</strong> Windows, macOS and Linux. On a phone, keep using slynk.me.</li>
+            </ul>
+
+            <h3>Downloads</h3>
+            <p class="on-web">
+              Entirely optional: Slynk works just as well at slynk.me, and nobody needs the desktop app to open your links.
+            </p>
+            <!-- No company, so no Apple or Microsoft signing; check the fingerprint first -->
+            <p class="dl-trust">
+              <strong>Slynk isn’t a company, a person or any other legal entity</strong>, so it can’t present itself to Apple or
+              Microsoft as one, or pass the tests they set before a program may open without warnings. On a Mac you’ll have to
+              jump through a few hoops the first time, and Windows asks you to confirm, so weigh up whether it’s worth it: the
+              website is exactly the same, except that each visit fetches Slynk from slynk.me first. If you go ahead, check the download’s SHA-256 fingerprint against
+              the one on GitHub (<a href="#download-check">how</a>) before you follow the steps below. On Linux it just runs.
+            </p>
+            <div class="downloads">
+              <div class="dl-row">
+                <svg class="dl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="16" rx="2" /><path d="M2.5 8.5h19M11.5 6.25h1.8M14.9 5.4h1.7v1.7h-1.7zM18.3 5.4l1.7 1.7M20 5.4l-1.7 1.7" /></svg>
+                <div class="dl-head">
+                  <h4>Windows</h4>
+                  <p class="dl-for">Windows 10 or 11, 64-bit</p>
+                </div>
+                <div class="dl-get">
+                  <a class="btn small grad-btn" data-release-href="windows" target="_blank" rel="noopener noreferrer">Download<span class="sr-only"> for Windows</span> <span class="dl-size"><span data-release-size="windows"></span></span></a>
+                </div>
+                <p class="dl-how">
+                  Double-click <strong>slynk.exe</strong>. If “Windows protected your PC” appears, click <strong>More info</strong>,
+                  then <strong>Run anyway</strong>.
+                </p>
+                <div class="dl-sums">
+                  <p>SHA-256 <code data-release-sum="windows"></code></p>
+                </div>
+              </div>
+              <div class="dl-row">
+                <svg class="dl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 9V6.5a2.5 2.5 0 1 0-2.5 2.5h11a2.5 2.5 0 1 0-2.5-2.5v11a2.5 2.5 0 1 0 2.5-2.5h-11a2.5 2.5 0 1 0 2.5 2.5z" /></svg>
+                <div class="dl-head">
+                  <h4>Mac</h4>
+                  <p class="dl-for">macOS 13 or later, on Apple silicon or Intel</p>
+                </div>
+                <div class="dl-get">
+                  <a class="btn small grad-btn" data-release-href="mac-arm" target="_blank" rel="noopener noreferrer"><span class="sr-only">Download for a Mac with </span>Apple silicon <span class="dl-size"><span data-release-size="mac-arm"></span></span></a>
+                  <a class="btn small grad-btn" data-release-href="mac-intel" target="_blank" rel="noopener noreferrer"><span class="sr-only">Download for a Mac with </span>Intel <span class="dl-size"><span data-release-size="mac-intel"></span></span></a>
+                </div>
+                <p class="dl-how">
+                  Double-click the zip, then <strong>Slynk</strong>. The first time, macOS won’t open it until you allow it in
+                  System Settings (<a href="#download-mac">how</a>).
+                </p>
+                <div class="dl-sums">
+                  <p>Apple silicon, SHA-256 <code data-release-sum="mac-arm"></code></p>
+                  <p>Intel, SHA-256 <code data-release-sum="mac-intel"></code></p>
+                </div>
+              </div>
+              <div class="dl-row">
+                <svg class="dl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="16" rx="2" /><path d="M7 9.5l3 2.5-3 2.5M12.5 15h4.5" /></svg>
+                <div class="dl-head">
+                  <h4>Linux</h4>
+                  <p class="dl-for">64-bit PCs (x86-64)</p>
+                </div>
+                <div class="dl-get">
+                  <a class="btn small grad-btn" data-release-href="linux" target="_blank" rel="noopener noreferrer">Download<span class="sr-only"> for Linux</span> <span class="dl-size"><span data-release-size="linux"></span></span></a>
+                </div>
+                <p class="dl-how">Unzip it and run <code>./slynk</code> in a terminal.</p>
+                <div class="dl-sums">
+                  <p>SHA-256 <code data-release-sum="linux"></code></p>
+                </div>
+              </div>
+            </div>
+            <p class="dl-note">
+              Built <span data-release-date></span>. The downloads come from Slynk’s page on GitHub, which lists their
+              fingerprints too and, like any website, sees your visit.
+            </p>
+
+            <div class="faq">
+              <details id="download-windows">
+                <summary>How do I start it on Windows?</summary>
+                <p>
+                  Double-click <strong>slynk.exe</strong>, in your Downloads folder or your browser’s list of downloads, and if
+                  “Windows protected your PC” appears, click More info, then Run anyway. Slynk opens in its own window; closing
+                  it stops Slynk. If Smart App Control is on (Windows 11), it may block Slynk without offering Run anyway.
+                </p>
+              </details>
+              <details id="download-mac">
+                <summary>How do I start it on a Mac?</summary>
+                <ol class="doc-steps">
+                  <li>Double-click the zip you downloaded, then double-click <strong>Slynk</strong> in the folder it makes.</li>
+                  <li>
+                    The first time, macOS won’t open it. Close its message (Done), then in System Settings › Privacy &amp;
+                    Security, scroll down to Security and click Open Anyway beside “Slynk was blocked to protect your Mac”.
+                    Click Open Anyway again (Open, on older macOS), and enter your password. You do this once for each new
+                    version.
+                  </li>
+                  <li>Slynk opens in its own window, and closing it stops Slynk. You can keep it in your Applications folder.</li>
+                </ol>
+              </details>
+              <details id="download-linux">
+                <summary>How do I start it on Linux?</summary>
+                <p>
+                  Unzip it, then run <code>./slynk</code> in a terminal. Slynk opens in its own window, and closing it stops it.
+                  The first time, it adds itself to your apps menu, to start it from there next time.
+                </p>
+              </details>
+              <details id="download-check">
+                <summary>How do I check it’s the official version?</summary>
+                <p>
+                  Each download’s fingerprint (its SHA-256) is listed above, and with the release on GitHub. Work out your
+                  file’s and compare: if a single character differs, don’t run it.
+                </p>
+                <ul class="doc-list">
+                  <li><strong>Windows:</strong> in PowerShell, <code>Get-FileHash .\slynk.exe</code></li>
+                  <li><strong>Mac:</strong> in Terminal, <code>shasum -a 256 slynk-mac-*.zip</code></li>
+                  <li><strong>Linux:</strong> <code>sha256sum slynk-linux-x64.zip</code></li>
+                </ul>
+              </details>
+              <details id="download-updates">
+                <summary>Does it update itself?</summary>
+                <p>
+                  No: it stays exactly as you downloaded it, which is the point. <span class="on-web">When there’s a new version, it appears here.</span><span class="on-local">New versions appear on slynk.me’s About page and on Slynk’s page on GitHub, not here.</span>
+                  The foot of Slynk’s page names your version and when it was made. Download the new one and use it in place of
+                  the old.
+                </p>
+              </details>
+              <details id="download-others">
+                <summary>Can anyone else use the desktop app on my computer?</summary>
+                <p>
+                  No. It answers only the browsers on your own computer, not other devices on your network. Anyone using your
+                  computer and browser can, as with slynk.me.
+                </p>
+              </details>
+            </div>
+            <p class="section-close"><button class="link-btn" type="button" data-close-section>Close this section</button></p>
+          </div>
+        </details>
+        <!-- /release -->
+
+        <details class="section" id="sending">
+          <summary><h2>Sending something</h2></summary>
+          <div class="section-body">
+            <div class="faq">
+              <details id="link-life">
+                <summary>How long do links last?</summary>
+                <!-- when ONE_TIME_ONLY -->
+                <p>
+                  Every link opens once. If nobody opens it, it stops working after up to three weeks, when the xx network
+                  clears out its pieces. Under Link options you can pick a shorter time: 1 hour, 1 day or 7 days.
+                </p>
+                <!-- else -->
+                <p>
+                  Up to three weeks. After that the xx network clears out its pieces, and the link stops working. Under Link
+                  options you can pick a shorter time (1 hour, 1 day or 7 days), or a one-time link, which stops working once
+                  it’s opened.
+                </p>
+                <!-- /when -->
+              </details>
+              <details id="take-back">
+                <summary>Can I take a link back?</summary>
+                <!-- when ONE_TIME_ONLY -->
+                <p>
+                  Yes, until it’s opened: press Cancel this link on the screen that showed it, before you leave that screen
+                  or close the <span class="on-web">tab</span><span class="on-local">window</span>, and the link stops working for everyone. While it’s still sending, pressing Cancel stops
+                  it part-way: no link is made, so nobody can open what was sent.
+                </p>
+                <!-- else -->
+                <p>
+                  Yes, if it’s a one-time link or one set to stop working within 7 days: press Cancel this link on the screen
+                  that showed it, before you leave that screen or close the <span class="on-web">tab</span><span class="on-local">window</span>, and the link stops working for everyone. A
+                  link that lasts the full three weeks can’t be taken back: anyone with it can open it until then. While it’s
+                  still sending, pressing Cancel stops it part-way: no link is made, so nobody can open what was sent.
+                </p>
+                <!-- /when -->
+                <p class="source-link" data-source="docs/findings/cancel-upload.md"><a target="_blank" rel="noopener noreferrer">Read the technical write-up</a></p>
+              </details>
+              <!-- when ONE_TIME_ONLY -->
+              <details id="one-time-only">
+                <summary>Why does every link open only once?</summary>
+                <p>
+                  Slynk is for passing something privately from one person to another, or with an anonymous inbox, from many
+                  to one. A link that opened again and again would let it spread things to crowds, including things that
+                  should never be shared, with Slynk’s name on them.
+                </p>
+                <p>
+                  So the first person to press Open it now has the link held for them while they collect it, anyone else is
+                  turned away before they download it, and once it’s open it won’t open again. To send something to several
+                  people, give each their own link.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    It would also strain the xx network that keeps Slynk private: everyone who opens a link joins the network,
+                    run by independent operators, and a link shared widely could overwhelm it.
+                  </p>
+                  <p>
+                    Slynk’s code can make links that open many times, with one setting. Any developer who wants to launch
+                    a similar service with their own version of Slynk’s code can switch that on: the choice, and what comes of
+                    it, would be theirs. Slynk itself has chosen not to, to act responsibly.
+                  </p>
+                </details>
+                <p class="source-link" data-source="docs/findings/why-links-open-once.md"><a target="_blank" rel="noopener noreferrer">Read the technical write-up</a></p>
+              </details>
+              <!-- /when -->
+              <details id="size-limit">
+                <summary>Why only 2 MB?</summary>
+                <p>
+                  Slynk is built for the small things that matter most. What you send is split into small pieces and passed
+                  through computers around the world, mixed with everyone else’s. That privacy makes it slow, about 8 KB a
+                  second, so 2 MB takes about four minutes. A film would take days.
+                </p>
+                <p>
+                  The network is shared by everyone and holds your pieces for up to three weeks, so keeping things small keeps
+                  it fair. Even so, 2 MB holds a lot: Slynk compresses what it can, so a whole book’s worth of text fits easily,
+                  and can make photos, videos and documents smaller. Add what you’d like to send, and Slynk shows how much of
+                  the 2 MB it uses.
+                </p>
+                <p class="source-link" data-source="docs/findings/upload-throughput-2026-10.md"><a target="_blank" rel="noopener noreferrer">Read the technical write-up</a></p>
+              </details>
+              <details id="compression">
+                <summary>How does Slynk fit big files into 2 MB?</summary>
+                <p>
+                  It compresses them, without changing the files that arrive. Text, code, web pages, CSV spreadsheets and other
+                  files that aren’t already compressed usually shrink to about a third of their size or less; each file’s line shows
+                  the size it will go at. Photos, videos, music and most documents are compressed already, so Slynk makes those
+                  smaller in other ways (below).
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    Slynk judges each file by what it holds, not its name, and compresses it only when that saves at least 5%.
+                    It uses deflate, the method inside zip files, straight away, then Brotli, a stronger method, which usually
+                    makes text and code about a sixth smaller again, and some PDFs far smaller. Brotli takes longer: seconds for
+                    a big file, more on a phone. Send before it’s done and the file goes with deflate. You can turn Brotli off
+                    in Settings, under Advanced (“Stronger compression”).
+                  </p>
+                  <p>
+                    With “To fit” in Settings, when what you’ve added is over 2 MB, Slynk gives Brotli up to 10 seconds (20 if
+                    Brotli might be enough on its own) before it makes photos, videos and documents smaller. On a slow phone, a
+                    big file may not be done in time.
+                  </p>
+                  <p>
+                    A zip that Slynk writes again, as it does when it removes hidden details, can be squeezed whole, which
+                    often makes a zip of code a quarter to a third smaller; the recipient still gets an ordinary zip with the
+                    same files in it. Brotli takes files of up to 25 MB. Text and code bigger than that aren’t read at all:
+                    they’d need to shrink more than twelve times to fit.
+                  </p>
+                </details>
+              </details>
+              <details id="smaller-copies">
+                <summary>How does Slynk make photos smaller?</summary>
+                <p>
+                  Slynk makes each photo as small as it can, or as you choose in Settings, so it sends faster, and says so.
+                  Only the smaller versions are sent; your originals stay on your device. You see each photo’s new size before
+                  you send, and can send any of them at full size instead, as long as they fit.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    With “Smallest”, the first choice under “Shrink photos, media &amp; docs” in Settings, each is redrawn at
+                    1,280 pixels on the long side (a smaller photo keeps its own size), at a low quality: fine on a phone, though
+                    it may look a little blocky up close. A photo it would hardly make smaller goes as it is. Under Advanced
+                    (“Smallest photos”), “Medium” keeps 1,280 pixels at a better quality, and “Good” goes up to 2,048 pixels at a
+                    good quality. They’re never made smaller than you choose: if they don’t all fit, Slynk says how many do.
+                  </p>
+                  <p>
+                    With “To fit”, Slynk makes photos smaller only when what you’ve added is over 2 MB: at up to 2,048 pixels on
+                    the long side (about 4 megapixels), with fewer pixels if needed, at a slightly lower quality if it must, and
+                    never below about 1,280 pixels on the long side. If the photos still don’t fit, it lowers the quality
+                    further, though they may look a little blocky up close; if even that isn’t enough, it tells you how many will
+                    fit. Smaller photos send faster, so Slynk doesn’t make them bigger just because there’s room.
+                  </p>
+                  <p>
+                    Tap a photo’s small picture or its name to see it as it will be sent, and zoom in to check the quality (“Show
+                    photo, media and document previews” in Settings). To keep your photos at full size, choose “Ask first”: Slynk
+                    then asks before making them smaller, when they don’t fit, and again before lowering the quality further.
+                    Once you’ve said yes, photos you add afterwards are made smaller too.
+                  </p>
+                  <p>
+                    Each is a new picture, so none of the original’s hidden details (metadata), like where it was taken or the
+                    camera, go with it. Animations are left as they are, since only their first frame would be kept. HDR and
+                    very vivid photos may look a little flatter. HEIC photos, which iPhones and some Android phones take, can
+                    be made smaller in Safari, and in other browsers where the device can decode HEVC video, as Chrome and Brave
+                    can on many phones. Firefox on Android can’t yet.
+                  </p>
+                </details>
+              </details>
+              <details id="smaller-media">
+                <summary>Can I send videos and audio?</summary>
+                <p>
+                  Yes. Slynk makes videos and audio (music, voice memos, recordings) smaller in your browser, as new files with
+                  none of the original’s hidden details; your originals stay on your device. Tap one’s small picture to play it
+                  as it will be sent; one that arrives can be played before you save it.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    With “Smallest”, the first choice under “Shrink photos, media &amp; docs” in Settings, a video is made at about
+                    426 × 240 pixels at most (240p), at up to 30 frames a second. If it doesn’t fit that way beside everything
+                    else, it’s made at 15 frames a second, then a size smaller, until it fits, as far as 320 × 180 pixels (180p) at
+                    15 frames a second and a lower quality, which fits up to about 3½ minutes; if it’s too long even for that,
+                    Slynk says so. Several videos step down together. In Settings, under Advanced (“Smallest videos”), you can
+                    start at 360p (640 × 360) instead, or at 180p, as small as it goes. With “To fit”, it’s made at most 640 ×
+                    360 pixels, and smaller for longer
+                    videos, up to about 3½ minutes; with photos too, they share the space: the longer the video, the smaller the
+                    photos are made, though never below about 1,280 pixels on their long side. Either way, its sound goes in
+                    mono, or is left out where your browser can’t make it smaller.
+                  </p>
+                  <p>
+                    Audio is made again as Opus, a format made for small files, in an .m4a file. With “Smallest” it goes at about
+                    16 kbit/s in mono, fine for speech but flat for music. With “To fit”, the longer it is, the lower the
+                    quality, from 96 kbit/s in stereo for up to about 2½ minutes to mono from about 6½ minutes, and up to about
+                    15 minutes fit, at a quality still fine for speech. Beside other files it shares the space, and is made again
+                    as files are added or removed. It works with MP3, M4A and WAV files, and FLAC and Ogg where your browser can
+                    open them, up to 60 MB, or 200 MB for a WAV recording. Its tags, such as the title, artist and cover art,
+                    don’t go with it.
+                  </p>
+                  <p>
+                    On an iPhone, a video can take a while to appear after you choose it, while the iPhone prepares it.
+                    It needs a browser that can make video: Safari, Chrome, Edge or Brave, or Firefox on a computer, but not
+                    Firefox on Android or Tor Browser. Audio needs the same, and on an iPhone, iPad or Mac, Safari 26 or later.
+                  </p>
+                </details>
+              </details>
+              <details id="smaller-documents">
+                <summary>Can Slynk make a PDF or Word file smaller?</summary>
+                <p>
+                  Yes, when it’s big because of its pictures, as most big ones are. Slynk makes those smaller in your browser:
+                  as small as it can with “Smallest” in Settings, while still readable on a screen, or with “To fit”, only as
+                  far as it needs to. The text, fonts, links and layout stay exactly as they are. It works for PDFs, Word,
+                  PowerPoint and Excel files, their LibreOffice equivalents, and RTF documents.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    With “To fit”, it lowers the pictures’ quality if it must, and a document shares the space with any photos
+                    and videos. Some pictures are left as they are: line drawings, GIFs, black-and-white scans, and most in
+                    print colours (CMYK). A signed or password-locked file is never changed, and neither are older .doc, .xls
+                    and .ppt files. Making a document smaller doesn’t remove its hidden details, like its author: that’s done,
+                    or not, as for any document, and its new pictures hold none of their own. For the file exactly as it was,
+                    choose “Ask first”.
+                  </p>
+                  <p>
+                    Tap a PDF’s small picture or its name to see it page by page as it will be sent, and a PDF that arrives
+                    can be looked at before you save it. Its pages are drawn in your browser by pdf.js, which <span class="on-web">every visit loads</span><span class="on-local">Slynk loads</span>
+                    at the start; a few pages may look wrong in the preview only. A Word, LibreOffice Writer or RTF document
+                    shows as simplified text, without its pictures or layout, and with tracked changes accepted. A plain text
+                    file, like a note, a CSV file or code, shows as it is, line by line,
+                    whatever its name, when its text is in UTF-8, as most is today. An SVG drawing shows as a picture, on a white
+                    background. As with a picture on a web page, nothing in it runs and nothing it links to is fetched. A very
+                    large or detailed one may show smaller, or not at all, and so may one Slynk can’t read. Older .doc files, PowerPoint and Excel files,
+                    and LibreOffice’s spreadsheets and presentations can’t be shown here.
+                  </p>
+                </details>
+              </details>
+              <details id="smaller-zips">
+                <summary>What does Slynk do with a zip?</summary>
+                <p>
+                  The same as with the files in it. Its photos, videos, audio files and documents are made smaller, and
+                  cleaned of hidden details, as they would be on their own, then put back in the zip, in their folders. Tap
+                  the line under the zip, like “The 4 photos inside”, to see each one and what was done to it.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    A photo or recording made smaller can get a new ending, like .jpg or .m4a, and “Plain file names” in Settings
+                    works for those in a zip too, though not for its folders or its other files (each file’s folder shows above
+                    its name, so you can see what goes). Only the zip itself is opened, so a zip inside it goes as it is, and so
+                    does a zip locked with a password. A zip can be any size, since Slynk reads only the parts it needs. Inside
+                    it, a WAV recording can start at up to 200 MB, a video at up to 1 GB (more, if the zip stored it
+                    uncompressed), and photos, documents and other recordings at up to 60 MB each; up to 200 of its files are
+                    made smaller.
+                  </p>
+                  <p>
+                    How a zip is cleaned is under “What hidden details does Slynk remove?”, and how one that arrives is checked
+                    under “Are files checked for viruses?”.
+                  </p>
+                </details>
+              </details>
+              <details id="passwords">
+                <summary>How do password links work?</summary>
+                <p>
+                  Slynk encrypts what you send once more, with a key worked out from the password in your browser. The
+                  password never leaves your browser and isn’t in the link, so slynk.me never sees it, and a lost password
+                  can’t be recovered. Pass it on separately from the link: whisper it in person, or use a different app.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    Working out the key is deliberately slow and takes a lot of memory (the method is called Argon2id), so
+                    someone with the link can’t quickly try millions of guesses. Capitals and extra spaces don’t matter when
+                    it’s typed in, and a wrong password never uses up a one-time link.
+                  </p>
+                  <p>
+                    <strong>Are five ordinary words really a strong password?</strong> Yes, because your browser picks them at
+                    random from a list of 1,904 words: about 25,000,000,000,000,000 possible passwords, to try one by one. Only
+                    someone who already has the link can try at all, and even at a million guesses a second, which would take a
+                    great deal of computing power here, it would need around 400 years on average.
+                  </p>
+                  <p>
+                    A password you make up is a different matter: names, dates, song lyrics and well-known phrases are among
+                    the first things people try. If you choose your own, make it long and unusual.
+                  </p>
+                </details>
+              </details>
+              <details id="hidden-details">
+                <summary>What hidden details does Slynk remove?</summary>
+                <p>
+                  Many files carry details you can’t see: where a photo was taken, the phone that took it and when, a
+                  document’s author, its editing history and the names on its comments. Before sending, Slynk takes these out
+                  on your own device, in your browser. Your files never go to slynk.me, or anywhere else, to be cleaned.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    Tap “Cleaned” under a file to see what it removed, and what the most telling details said. Only you see that
+                    list: it’s never sent or saved.
+                  </p>
+                  <p>
+                    It works on most photos, phone and camera videos (MP4 and MOV), MP3 and FLAC audio, most SVG drawings, and PDF,
+                    Word, Excel, PowerPoint, OpenDocument and RTF files. Older Office files (.doc, .xls, .ppt) can’t be checked: save them in
+                    the newer format first. In a zip it cleans the same kinds of file, except zips inside it, removes the
+                    zip’s record of when each file was saved, and lists under the zip any file it couldn’t check. From a video it
+                    removes the location, the phone or camera, the dates, and the track of where an action camera went. From an
+                    SVG drawing it removes what the app that made it leaves behind, like the author, comments and file names,
+                    and cleans the photos stored in it. It looks the same, but may no longer open for editing as before, and its
+                    title, layers you’ve hidden and anything off the page still go with it. Signed files are
+                    left as they are, since cleaning would break the signature, and so are password-protected ones. If a file’s
+                    name gives away a date or a device, “Plain file names” in Settings sends it under a plain one, like photo.jpg.
+                  </p>
+                  <p>
+                    It can’t remove what you can see, like faces, a street sign or the words in a document, nor watermarks or
+                    the faint patterns a camera leaves in every photo. The recipient sees “Hidden details were removed”: that’s
+                    the sender’s word, not proof.
+                  </p>
+                </details>
+                <p class="source-link" data-source="docs/findings/hidden-data-cleaning.md"><a target="_blank" rel="noopener noreferrer">Read the technical write-up</a></p>
+              </details>
+              <details id="file-checks">
+                <summary>Are files checked for viruses?</summary>
+                <p>
+                  No. When a file arrives, your browser checks what kind of file it is and what’s packed inside it, never what a
+                  photo, video or recording shows. It can tell you if the file is a program, has macros or scripts, or will try to
+                  contact the internet when opened, as any web page or SVG drawing can in a browser, and checks each file in a zip
+                  the same way (by their names alone in a locked
+                  zip, a zip inside a zip, or past a zip’s first 2,000 files or 64 MB). If a check can’t finish, it says so. Nothing is sent anywhere to do this, and nothing in a
+                  file can run in the app: it only previews files, and a file can’t make it contact any website. It isn’t a virus
+                  scanner: a file without a warning can still be harmful once it’s opened in another program, so only open files
+                  from people you trust.
+                </p>
+              </details>
+            </div>
+            <p class="section-close"><button class="link-btn" type="button" data-close-section>Close this section</button></p>
+          </div>
+        </details>
+
+        <details class="section" id="inbox">
+          <summary><h2>Anonymous inboxes</h2></summary>
+          <div class="section-body">
+            <p>
+              An anonymous inbox is different to Slynk links: a permanent address, shared as a link or QR code, that anyone
+              can write to as often as they need, without an account, a name or an email address.
+            </p>
+            <p>
+              It’s made for organisations that people need to reach in confidence: refuges and support services, charities,
+              newsrooms, whistleblowing and staff-concern channels, and advice services. Someone frightened of being seen
+              getting in touch can write from any browser, and their message carries nothing that leads back to them unless
+              they put it there. Anyone can have one too, including to get replies.
+            </p>
+            <p>
+              Messages never go to slynk.me. They wait, encrypted, on the xx network for up to about three weeks, and on the
+              owner’s own device too if they choose.
+            </p>
+            <p class="doc-back"><a class="btn" id="about-inbox" href="/#/new-inbox">Create an anonymous inbox</a></p>
+
+            <h3>If you have an inbox</h3>
+            <div class="faq">
+              <details id="inbox-setup">
+                <summary>How do I set up an inbox and share it safely?</summary>
+                <p>
+                  Choose “Create an inbox” in the Anonymous inbox card on the front page. Give it a name only you see, if you
+                  like, then write down its passphrase (12 words), and back it up as a file too if you want, then or later from your inbox’s menu. Nothing is sent anywhere while you do
+                  this: an inbox is a pair of keys, made in your browser.
+                </p>
+                <p>
+                  Put its link or QR code where people will find it, such as your website, posters or leaflets. Anyone can make
+                  an inbox, so where the link is published is what people trust: put it on a page you control.
+                </p>
+                <p>
+                  Keep the passphrase secret and safe: anyone who has it can read everything sent to the inbox, and nobody can
+                  recover it if it’s lost. If it may have leaked, make a new inbox and replace your links and posters.
+                </p>
+              </details>
+              <details id="inbox-reading">
+                <summary>How do I read my messages?</summary>
+                <p>
+                  Choose “Unlock my inbox” and type your passphrase, or restore it from your backup file. Your browser collects
+                  everything the network holds for your inbox, which takes a couple of minutes (less if it’s kept on your
+                  device), and new messages appear while the <span class="on-web">tab</span><span class="on-local">window</span> stays open. slynk.me never sees your messages.
+                </p>
+                <p>
+                  Messages wait on the network for up to about three weeks, read or not, so open your inbox at least once a
+                  week, and unless it’s kept on your device, copy what you need before you close the <span class="on-web">tab</span><span class="on-local">window</span>.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    The list never shows what a message says, in case someone can see your screen: open one to read it. A
+                    message shows as from “Anonymous” unless its sender
+                    lets you reply (see “Can the owner reply?”); then you get a conversation, like a chat. Your replies stay on
+                    the device you sent them from: open your inbox on another device and you’ll see only their messages.
+                  </p>
+                  <p>
+                    Slynk asks your browser not to offer to save your passphrase. If it offers anyway, it’s safest to say no:
+                    anyone who can use your saved passwords could then open your inbox too.
+                  </p>
+                  <p>
+                    Senders never learn whether their message was read, unless you open a link they put in it: a website of
+                    theirs would see the visit, and a Slynk link they sent would show as used if they tried it themselves.
+                  </p>
+                </details>
+              </details>
+              <details id="inbox-links">
+                <summary>What happens when I open a link in a message?</summary>
+                <p>
+                  Slynk warns you before opening any link, a Slynk link included, and shows you where it goes. <span class="on-web">It then
+                  opens it only in a new tab, so your inbox stays open.</span><span class="on-local">It then opens a Slynk link in a
+                  second Slynk window, so your inbox stays open, and another site’s in your usual browser.</span> A Slynk link
+                  opens there with a new, temporary identity on the network, never the one your inbox uses, but from the same
+                  internet address, so the mixnet’s gateways could tell both came from the same place, unless you use a VPN.
+                </p>
+                <p>
+                  Opening a link isn’t invisible, though: an ordinary website sees your internet address, and whoever sent a
+                  Slynk link can find out whether it has been opened. So open links only from people you trust, ideally in a
+                  private window, and if it matters that a link can’t be tied to your inbox, from a different connection or
+                  with a VPN.
+                </p>
+              </details>
+              <details id="inbox-keep">
+                <summary>Can my inbox be kept on my device?</summary>
+                <p>
+                  Yes: switch on “Keep this inbox on this device” when you open it, or choose “Keep on this device” in your
+                  inbox (it’s off unless you switch it on). Your inbox then stays in <span class="on-web">this browser</span><span class="on-local">the desktop app on this computer</span>, there at once
+                  next time, even after the xx network has let its messages go. Only do it on a device that’s yours alone.
+                </p>
+                <p>
+                  What’s kept is encrypted with a key worked out from your passphrase, so it can’t be read without it. Your passphrase itself isn’t kept, unless you <a href="#inbox-remember">ask Slynk to remember it</a>. “Forget this device” in your inbox deletes everything kept there and locks the inbox.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    What’s kept: your messages, folders and titles, what you’ve read, your address book, the inboxes people
+                    wrote from when they let you reply (with the names they gave, and the reply keys their quantum-safe messages
+                    carried, so your replies stay quantum-safe), the messages you sent, including the messages you sent
+                    without letting them reply, and who you’ve blocked. Files never are, so save what you need.
+                  </p>
+                  <p>
+                    Opening is quicker, too. Your browser remembers how far back it has already looked, so next time it only
+                    checks what has arrived since.
+                  </p>
+                  <p>The honest limits:</p>
+                  <ul class="doc-list">
+                    <li>
+                      Anyone with access to the device your inbox is kept on, and your passphrase, can read everything kept.
+                      Don’t switch it on for a computer others can use.
+                    </li>
+                    <li>
+                      The main page says your inbox is kept here, so <span class="on-web">anyone who uses this browser</span><span class="on-local">anyone who opens Slynk on this computer</span> will see that there is one,
+                      and its name if its passphrase is remembered. They still can’t read it without your passphrase, unless that is remembered too, without a password.
+                    </li>
+                    <li>
+                      On an iPhone or iPad, and in Safari, the browser may clear what’s kept after seven days without a visit,
+                      so open your inbox at least once a week there. A private window keeps nothing once it’s closed.
+                    </li>
+                    <li>
+                      The mixnet’s gateways already see your internet address when you open your inbox, and from how little
+                      it asks them for, they might also guess that your inbox is kept on a device. They can never see what’s in it.
+                    </li>
+                    <li>If your inbox is open in two <span class="on-web">tabs</span><span class="on-local">windows</span> at once, only the one opened first keeps your changes.</li>
+                  </ul>
+                </details>
+              </details>
+              <details id="inbox-remember">
+                <summary>Can Slynk remember my passphrase?</summary>
+                <p>
+                  Yes, if you switch on “Remember my passphrase” when you create or unlock your inbox, or choose it
+                  from your inbox’s menu. It’s off unless you do, and it keeps your inbox on the device too. Only do it on a
+                  device that’s yours alone and locked with a passcode.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    You can give your passphrase a password as you do. It’s then encrypted on the device, and so is everything kept with it, and you type the password to open your inbox here. It’s only as strong as it is hard to
+                    guess: someone who copied your browser’s files could try passwords one by one, slowly, as with password
+                    links, so make it long and unusual. If you forget the password, your passphrase still opens your inbox. If you lose your written copy of the passphrase instead, “Show my passphrase” in your inbox’s menu shows it once you type the password.
+                  </p>
+                  <p>
+                    Without a password, your inbox opens with a tap, and the passphrase is saved as it is: <span class="on-web">anyone using this browser</span><span class="on-local">anyone who opens Slynk on this computer</span> can open your inbox and write as you, and anyone who copies it can do the same from anywhere. An inbox’s passphrase can never be changed: if it gets out, you’d need a new inbox.
+                  </p>
+                  <p>
+                    To delete it, choose “Forget my passphrase on this device” in your inbox’s menu, or forget the device. The browser, or a backup of the device made meanwhile, may still hold it for a while.
+                  </p>
+                </details>
+              </details>
+              <details id="inbox-backup">
+                <summary>Can I back up my inbox, or move it to another device?</summary>
+                <p>
+                  Yes: choose “Back up your inbox” in your inbox’s menu. It saves a file, locked with a password you choose,
+                  that holds your passphrase and, unless you switch it off, everything your inbox keeps. To use it, choose
+                  “Unlock my inbox” on any device, then “Restore from a backup file”: your messages come back, kept on that
+                  device, alongside anything it already kept.
+                </p>
+                <p>
+                  Your passphrase alone opens your inbox on any device, at any time. Without a backup, though, it starts
+                  afresh there: only the messages the network still holds (up to about three weeks) come back, without the
+                  ones you sent, your folders, titles or address book.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    A backup is a snapshot. Once it’s restored, your browser carries on looking for messages from where the
+                    backup left off, so anything sent since comes too, while the network still holds it (up to about three
+                    weeks). Files sent to you are never in a backup, so save what you need.
+                  </p>
+                  <p>
+                    Anyone with the file and its password can read every message in it, even after the network has let them go.
+                    So give it a long, unusual password (Slynk asks for at least 12 characters, and can suggest one), and keep
+                    the file and its password apart. Without the password, nothing in it can be read, not even your inbox’s
+                    name; its size gives only a rough idea of how much it holds.
+                  </p>
+                  <p>The backup offered as you create an inbox holds only its passphrase: there’s nothing else yet.</p>
+                </details>
+              </details>
+              <details id="inbox-block">
+                <summary>Can I block someone?</summary>
+                <p>
+                  Yes, if they let you reply: choose “Block them” in your conversation’s menu. Your inbox needs to be kept on
+                  your device, so the block is remembered. Their messages are then set aside: not shown, not counted, and no
+                  alerts. They aren’t told. “Blocked senders” in your inbox’s menu lists them, to read what they sent or
+                  unblock them.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    Blocking can’t stop their messages reaching you: nobody on the network, nor slynk.me, can tell who sent a
+                    message, so your browser only finds out when it opens one, and sets it aside then. Of what they send after
+                    the block, only their latest 100 messages are kept, out of sight, so they can’t fill your inbox.
+                  </p>
+                  <p>
+                    An anonymous message can’t be blocked: there’s nothing to tell its sender by. Whoever you block could still
+                    write anonymously, or from a new inbox; to stop hearing from someone altogether, you’d need a new inbox,
+                    shared only with the people you want.
+                  </p>
+                  <p>
+                    A block is kept with your inbox on that device, and goes into its backups. Unlock your inbox on another
+                    device without restoring a backup, and their messages show there as usual.
+                  </p>
+                </details>
+              </details>
+              <details id="inbox-quantum">
+                <summary>What’s a quantum-safe inbox?</summary>
+                <p>
+                  Every inbox has two addresses, made from the same passphrase: a secure one and a longer, quantum-safe one.
+                  People can write to either, and every message comes to the same inbox, marked with a padlock (secure) or an
+                  atom (quantum-safe). Share, in the inbox, gives either address.
+                </p>
+                <p>
+                  The quantum-safe address is for messages that should stay private for many years, perhaps decades: they’re
+                  built to stay closed even if a large quantum computer is one day built. It costs a little: a longer address, and first or
+                  anonymous messages take a little longer to send.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    The secure address uses encryption a large enough quantum computer could break, if one is ever built, and
+                    someone could keep copies of an inbox’s messages while the network holds them, hoping to open them then.
+                    Messages to the quantum-safe address are also encrypted with ML-KEM, the method the US standards body NIST
+                    published in 2024 to resist quantum computers, and stay closed as long as either method holds. As far as Slynk knows, no other app on the xx network has an address like this: one you can
+                    share openly, for private messages protected against quantum computers.
+                  </p>
+                  <p>
+                    Replies are quantum-safe too. When someone writes to the quantum-safe address and lets the owner reply,
+                    their message also carries a reply key for the owner’s replies, so they’re built to stay closed even to
+                    someone who could break the usual lock. From the first reply on, each message in the conversation travels
+                    as a single piece, like any other.
+                  </p>
+                  <p>
+                    Until the first reply, and always for anonymous messages, a message to it travels as two pieces, sent a few
+                    seconds apart, each in a round of its own, so it takes a little longer. Few people send quantum-safe
+                    messages yet, so someone running one of the network’s gateways may be able to tell which internet address
+                    sent a message to that inbox, and someone watching the inbox could notice two messages arriving close
+                    together. Cover messages don’t help here, as they’re single pieces; a VPN keeps your internet address from
+                    them. The address is longer too, about 1,700 characters as a link, and its QR code is more detailed: print
+                    it larger, and scan it from closer.
+                  </p>
+                  <p>
+                    Anyone who has the quantum-safe address can work out the secure one, so an organisation that wants every
+                    message quantum-safe should publish only the quantum-safe address.
+                  </p>
+                </details>
+                <p class="source-link" data-source="docs/findings/quantum-safety.md"><a target="_blank" rel="noopener noreferrer">Read the technical write-up</a></p>
+              </details>
+            </div>
+
+            <h3>If you’re writing to one</h3>
+            <div class="faq">
+              <details id="inbox-sending">
+                <summary>What should I know before writing to an inbox?</summary>
+                <p>
+                  Make sure the link came from the organisation’s own website, poster or leaflet: the link is the inbox’s
+                  address, and “Check it.” compares it with one you paste or scan. Your message is encrypted in your browser
+                  so that only the inbox’s owner can read it: not slynk.me, and not the xx network. What happens to it then
+                  is up to them, so include only what you’re comfortable with them having.
+                </p>
+                <p>
+                  If someone you’re writing about controls your device or network, like an employer, they could see when you
+                  used Slynk, so use a device and connection they don’t control.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    A<!-- when INBOX_FILES --> short<!-- /when --> message travels as a single piece, exactly the same size as
+                    every other, which makes it hard to pick out. To a quantum-safe inbox, a first or anonymous message
+                    travels as two pieces, sent a few seconds apart.
+                  </p>
+                  <!-- when INBOX_FILES -->
+                  <p>
+                    Files and longer messages travel as many pieces. While few people use the xx network, someone running one
+                    of its gateways could sometimes match them to the inbox they were for and to your internet address, though
+                    never see what’s inside. A VPN keeps your address from them; a short message on its own is the most
+                    discreet way to write.
+                  </p>
+                  <!-- /when -->
+                  <p>
+                    As with anything you send, the network’s computers can see your internet address, never what you wrote; a
+                    VPN keeps your address from them.
+                  </p>
+                  <p>
+                    Slynk keeps nothing on your device when you write to an inbox, unless your own inbox is open in that <span class="on-web">tab</span><span class="on-local">window</span> and
+                    kept on your device: then it keeps what you wrote, encrypted with the rest of your inbox, so you can check it
+                    next time. If you let them reply, it’s in your conversation with them, with the name you showed them; if
+                    not, it’s in your Inbox on its own. <span class="on-web">Your browser’s history keeps the inbox’s link, though, so if someone
+                    else may look at your device, use a private window.</span><span class="on-local">An inbox’s address you paste or scan into the desktop app goes into no history; one you click opens on slynk.me in your usual browser, whose history keeps it.</span>
+                  </p>
+                </details>
+              </details>
+              <details id="inbox-scan">
+                <summary>Can I scan an inbox’s QR code?</summary>
+                <p>
+                  Yes. Point your phone’s own camera at it, and it opens slynk.me ready to write to that inbox. With your own
+                  inbox open, New message has a camera button too. In the desktop app, so does the box for links
+                  you’ve received.
+                </p>
+                <p>
+                  The camera’s picture stays in your browser: the page reads the code right there, and nothing is recorded,
+                  saved or sent anywhere. The camera turns on only when you tap one of those buttons, and your browser asks you first.
+                  It may offer to remember your answer for <span class="on-web">slynk.me</span><span class="on-local">the desktop app</span>; if you let it, that stays in your browser’s site
+                  settings, where you can remove it. The camera turns off as soon as it reads the code, you close it,
+                  or the page goes out of sight. Without a camera, “Use a photo instead” reads a photo or screenshot.
+                </p>
+              </details>
+              <details id="inbox-reply">
+                <summary>Can the owner reply?</summary>
+                <p>
+                  Yes, if the sender lets them. Someone who has their own anonymous inbox open in the same <span class="on-web">tab</span><span class="on-local">window</span> can switch on
+                  “Let them reply”, and give a name to show if they like. Their messages then make a conversation in the
+                  owner’s inbox, and the owner’s replies arrive in theirs. Anonymous stays the default: otherwise a message
+                  carries nothing that leads back to whoever sent it.
+                </p>
+                <p>
+                  Letting them reply changes what the owner learns. They still don’t learn who you are, but they get your
+                  inbox’s address, so they can write to you, and they can tell that your messages come from the same inbox.
+                  You’re no longer anonymous to them, but known by your inbox and the name you chose.
+                </p>
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    Anyone can choose any name, so the owner’s page tells senders apart by their inbox, never by their name, and
+                    warns when a name changes or looks like someone else’s. Senders who give no name show as “Sender 1”,
+                    “Sender 2” and so on. Owners who keep their inbox on their device can name each sender; otherwise they start
+                    afresh each time the inbox opens, so “Sender 2” may be someone else next time.
+                  </p>
+                  <p>
+                    The owner’s page checks that a sender really holds the inbox replies would go to. The check convinces only
+                    the owner, so it can’t be shown to anyone else as proof that you wrote the message. But someone who got
+                    hold of the owner’s passphrase could read their inbox and also write to it as if from yours.
+                  </p>
+                  <p>
+                    On its own, an inbox isn’t a complete reporting channel: organisations with legal duties for reports, such
+                    as acknowledging them in a set time, will need other arrangements too.
+                  </p>
+                </details>
+              </details>
+              <details id="inbox-files">
+                <summary>Can people send files to an inbox?</summary>
+                <!-- when INBOX_FILES -->
+                <p>
+                  Yes: files, and messages too long for one piece, up to 2 MB in all. They wait on the xx network for up to
+                  about three weeks, like messages, and the inbox’s owner collects them with a tap. A message can include
+                  links too, Slynk links among them.
+                </p>
+                <!-- else -->
+                <p>
+                  <span class="on-web">Not on slynk.me, for now:</span><span class="on-local">Not on slynk.me or in the desktop app, for now:</span> its inboxes take short messages. A message can include links, though, Slynk links
+                  among them: a sender can make a link to their files on Slynk’s front page and paste it in.
+                </p>
+                <!-- /when -->
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    A short message is hard to pick out from everyone else’s, but <!-- when INBOX_FILES -->files travel<!-- else -->a file would travel<!-- /when --> as many pieces, and while
+                    few people use the xx network, someone running one of its gateways could sometimes match a large upload to
+                    the internet address it came from, and to the inbox it was for. An inbox’s owner is often public, so that
+                    could point at who wrote to them.<!-- when INBOX_FILES --> A VPN keeps your address from them.<!-- /when -->
+                  </p>
+                  <p>
+                    A link in a message opens in <span class="on-web">a new tab</span><span class="on-local">a second Slynk window</span> with an identity of its own, so the owner can open it whenever suits
+                    them before it expires, even on another device. Opened from a different internet address than the inbox’s,
+                    on another network or with a VPN, it can’t easily be tied to the inbox. <!-- when ONE_TIME_ONLY -->And since every link opens only
+                    once<!-- else -->And if it’s a one-time link<!-- /when -->, whatever it holds reaches the owner alone.
+                  </p>
+                  <!-- when !INBOX_FILES -->
+                  <p>
+                    Slynk’s code can send files and longer messages to an inbox too, with one setting switched on. Any
+                    developer who launches their own version of Slynk’s code can switch it on, if they wish: the choice, and
+                    what comes of it, would be theirs. An inbox opened on slynk.me<span class="on-local"> or in the desktop app</span> doesn’t collect files, even ones sent from
+                    someone else’s version of Slynk.
+                  </p>
+                  <!-- /when -->
+                </details>
+              </details>
+            </div>
+            <p class="section-close"><button class="link-btn" type="button" data-close-section>Close this section</button></p>
+          </div>
+        </details>
+
+        <details class="section" id="depth">
+          <summary><h2>In more depth</h2></summary>
+          <div class="section-body">
+            <p>For the curious: how Slynk works underneath, and what each part of the system can see.</p>
+            <div class="faq">
+              <details id="one-time-how">
+                <summary>How do one-time<!-- when !ONE_TIME_ONLY --> and expiring<!-- /when --> links work?</summary>
+                <p>
+                  Slynk encrypts what you send a second time, with a key in two random halves. One goes in the link. The other
+                  is held by slynk.me’s key server, a separate computer set up for nothing else: it holds that half in its
+                  memory only, never your data or the link, and never writes it to its disk while it runs. It deletes it after
+                  the link is used up, cancelled or expired. The pieces stay on the mixnet for up to three weeks, but can’t be
+                  read without it.
+                </p>
+                <p>
+                  Opening the link does nothing by itself. When someone presses Open it now, slynk.me holds the link for
+                  them for 15 minutes while they collect it, and it’s used up once they have it; if they don’t finish, it
+                  works again after those 15 minutes. So anyone who has the link can find out whether it’s still waiting to
+                  be opened, but only by starting to open it themselves, which holds it for 15 minutes.
+                </p>
+                <!-- when !ONE_TIME_ONLY -->
+                <p>
+                  That’s a one-time link. A link set to stop working within 7 days opens any number of times until then,
+                  unless it’s cancelled first. A link that lasts the full three weeks needs no key server at all: its whole
+                  key is in the link.
+                </p>
+                <!-- /when -->
+                <details class="more-about">
+                  <summary>More detail</summary>
+                  <p>
+                    What slynk.me’s key server holds, and doesn’t, is under <a href="#slynk-sees">What slynk.me sees</a>. Its
+                    half is out of reach there, so the link itself is what matters most. Treat it like a
+                    key: share it in person or through an encrypted app you trust, and add a password for more safety. <!-- when ONE_TIME_ONLY -->Once it’s been opened<!-- else -->Once a one-time link has been opened<!-- /when -->, it’s no use to anyone. <span class="on-web">While few people use
+                    Slynk, the times of visits to the website could still hint at who sent something to whom, and a VPN adds
+                    an extra layer of privacy.</span><span class="on-local">A VPN adds an extra layer of privacy.</span>
+                  </p>
+                </details>
+                <p class="source-link" data-source="docs/findings/one-time-links.md"><a target="_blank" rel="noopener noreferrer">Read the technical write-up</a></p>
+              </details>
+              <details id="link-private">
+                <summary>Does slynk.me ever see my link?</summary>
+                <p>
+                  No. The key is in the part of the link after the # sign, which browsers never send to a website. <span class="on-web">Once the
+                  page has read it, it clears it from the address bar too, though your browser’s history still keeps it
+                  (see <a href="#private-window">Use a private window</a>).</span><span class="on-local">And a link you paste or scan into the desktop app never goes into an address bar or any history at all.</span>
+                </p>
+                <p class="source-link" data-source="docs/findings/link-and-envelope-format.md"><a target="_blank" rel="noopener noreferrer">Read the technical write-up</a></p>
+              </details>
+              <details id="network-sees">
+                <summary>What exactly can the xx network see?</summary>
+                <p>
+                  Your browser talks to a handful of the network’s entry points, called gateways. Between them, they see your
+                  internet address, your <span class="on-web">tab’s</span><span class="on-local">window’s</span> temporary network identity, and when and how many pieces you send. Gateways
+                  share each round’s list of senders, with their addresses, to limit abuse, and the list of mailboxes that
+                  received pieces, so deliveries can be found. Each time your <span class="on-web">tab</span><span class="on-local">window</span> joins the network (and again if a slow join
+                  starts over), the network’s sign-up service sees your internet address.
+                </p>
+                <p>
+                  The computers that do the mixing, called nodes, see your temporary identity but never your internet
+                  address. When someone collects a delivery, the gateways their browser uses see their internet address and
+                  which mailbox they collect from. Nobody in the network sees what’s inside, or the link.
+                </p>
+                <p class="source-link" data-source="docs/findings/gateway-metadata.md"><a target="_blank" rel="noopener noreferrer">Read the technical write-up</a></p>
+              </details>
+              <details id="inbox-seen">
+                <summary>What can others see about an inbox?</summary>
+                <p>
+                  An inbox’s address is public by design, so anyone who has it can work out its mailbox and ask the xx network
+                  when messages arrived there, and how many. Never what they say, or who sent them.
+                </p>
+                <p>
+                  When the owner opens the inbox, the gateways their browser uses see their internet address alongside the
+                  inbox’s mailbox. That’s no secret for an organisation whose inbox is public anyway; anyone who would rather
+                  not be linked to theirs can use a VPN.
+                </p>
+                <p>
+                  Senders are protected by the crowd: each round mixes the pieces of everyone sending at that moment. While
+                  few people use the network, that crowd can be small, and someone running one of its gateways could
+                  sometimes narrow down who sent a message to a particular inbox from its timing. More people, and more Cover
+                  messages, make the crowd bigger.
+                </p>
+                <p>
+                  Messages to inboxes never go from the same network identity as your links or your own inbox, but from the
+                  same device and connection they share an internet address, so the network’s computers could tell they came
+                  from the same place, unless you use a VPN.
+                </p>
+              </details>
+              <details id="inbox-how">
+                <summary>How does an inbox work?</summary>
+                <p>
+                  An inbox is a pair of keys, worked out in the owner’s browser from its passphrase (12 words). The public key
+                  is the address in the link; the private key stays with the owner. There are no inbox names, which anyone
+                  could copy: the link itself is the address.
+                </p>
+                <p>
+                  A sender’s browser seals the message so only the private key can open it, pads it to the size of every other
+                  message, and sends it through the mixnet to a mailbox on the network worked out from the address. The
+                  network holds it there for up to about three weeks, and nothing is stored anywhere else. The owner’s browser
+                  joins the network as a new, temporary identity, asks for everything delivered to that mailbox, and shows
+                  whatever the private key opens; anything else there belongs to other people and is ignored.
+                </p>
+                <p class="source-link" data-source="docs/findings/inbox.md"><a target="_blank" rel="noopener noreferrer">Read the technical write-up</a></p>
+              </details>
+              <details id="honest-node">
+                <summary>What does “one honest node” mean?</summary>
+                <p>
+                  The xx network works in rounds. Each round, a team of 5 nodes takes a batch of up to 1,000 pieces from
+                  everyone sending at that moment and shuffles them in turn. If just one of the nodes keeps its part of the
+                  shuffle secret, nobody can tell which piece going in became which coming out. It doesn’t stop anyone seeing
+                  who took part in a round, or how many pieces each person sent, which is why a bigger crowd, and cover
+                  messages, help.
+                </p>
+              </details>
+              <details id="mixing-speed">
+                <summary>How is the mixing fast enough?</summary>
+                <p>
+                  The xx network’s mixing method, cMix, does its heavy maths ahead of time, so the mixing itself needs only
+                  fast, simple steps. Rounds are announced about two seconds before they start, and Slynk packs up to 11 of
+                  your pieces into each one.
+                </p>
+              </details>
+              <details id="why-wait">
+                <summary>Why does Slynk wait before connecting?</summary>
+                <p>
+                  Joining the xx network creates a new identity, and the network admits only so many new identities a day, for
+                  everyone. So Slynk waits until you start writing, choose a file or open a link. You can change this in
+                  Settings.
+                </p>
+                <p class="source-link" data-source="docs/findings/network-identities.md"><a target="_blank" rel="noopener noreferrer">Read the technical write-up</a></p>
+              </details>
+              <details id="postage">
+                <summary>Does Slynk pay to use the xx network?</summary>
+                <p>
+                  Not yet, because nobody can. The xx network plans “postage”: a free allowance for everyday use, and a way for
+                  heavier users and apps to pay for more with xx coins, its own currency. For now, sending is free for every app.
+                </p>
+                <p>
+                  Slynk knows it asks a lot: <span class="on-web">every visit joins</span><span class="on-local">each time it opens, it joins</span> as a new identity, and files travel as many pieces. It keeps
+                  that small where it can, by joining only when you start, reusing a <span class="on-web">tab’s</span><span class="on-local">window’s</span> identity wherever it safely can,
+                  <!-- when ONE_TIME_ONLY -->sending at most 2 MB, and making links that open once<!-- else -->and sending at most 2 MB<!-- /when -->. Slynk’s view is that showing what cMix can do for
+                  people comes first, until the network brings postage in; then Slynk will follow its rules.
+                </p>
+              </details>
+              <details id="connects-to">
+                <summary>What does Slynk connect to?</summary>
+                <p>
+                  Only <span class="on-web">slynk.me, for the page itself and, for one-time<!-- when !ONE_TIME_ONLY --> and expiring<!-- /when --> links, its key server</span><span class="on-local">your own computer, for the page itself; slynk.me’s key server, for one-time<!-- when !ONE_TIME_ONLY --> and expiring<!-- /when --> links</span>; and the xx network: its
+                  directory of nodes (which the network keeps on Amazon’s cloud), its sign-up service for new identities,
+                  and its gateways. The page’s security rules forbid anything else. slynk.me’s key server is built to know as
+                  little as possible: see <a href="#slynk-sees">What slynk.me sees</a>.
+                </p>
+                <p>
+                  Your browser’s connections to <span class="on-web">slynk.me and its key server</span><span class="on-local">slynk.me’s key server</span> use a quantum-safe key exchange where your browser
+                  supports it, as up-to-date ones do, so a recording of them is built to stay closed even to a future quantum
+                  computer.
+                </p>
+              </details>
+            </div>
+            <p class="section-close"><button class="link-btn" type="button" data-close-section>Close this section</button></p>
+          </div>
+        </details>
+
+        <details class="section" id="open">
+          <summary><h2>Open source and credits</h2></summary>
+          <div class="section-body">
+            <div class="faq">
+              <details id="open-source">
+                <summary>Is Slynk open source?</summary>
+                <p>
+                  Yes, under the BSD 2-Clause licence, so anyone may read, check and reuse its code. The libraries it uses keep
+                  their own licences (see “Credits and licences”).
+                </p>
+                <p>
+                  That includes the part that cleans your files and makes them smaller: other apps can take the same code
+                  Slynk uses for everything you send, with an example that shows how.
+                </p>
+                <p class="source-link" data-source=""><a target="_blank" rel="noopener noreferrer">See Slynk’s code</a></p>
+                <p class="source-link" data-source="docs/findings/"><a target="_blank" rel="noopener noreferrer">Read all the technical write-ups</a></p>
+                <p class="source-link" data-source="docs/findings/decisions.md"><a target="_blank" rel="noopener noreferrer">Read the decisions Slynk took, and why</a></p>
+                <p class="source-link" data-source="docs/findings/preparing-files.md"><a target="_blank" rel="noopener noreferrer">Reuse Slynk’s file cleaning and shrinking in your own app</a></p>
+              </details>
+              <details id="verify">
+                <summary>How can I check this is the published code?</summary>
+                <!-- Verifiable builds: CI's SHA256SUMS.txt in the deploy branch (web/scripts/fingerprints.ts), deploy/check-site.sh, the footer's commit. -->
+                <p class="on-local">
+                  For the desktop app, check its download: its fingerprint (its SHA-256) should match the one on Slynk’s page on
+                  GitHub, and if a single character differs, don’t run it. From then on it runs those same files from your own
+                  computer, and slynk.me can’t change them, for you or anyone else.
+                </p>
+                <p class="on-local">
+                  The website inside it is the version named at the foot of Slynk’s page. It was built by GitHub from Slynk’s
+                  published code, which always builds to exactly the same files, so anyone can rebuild it and compare. Each
+                  version’s list of fingerprints is kept with the code.
+                </p>
+                <p class="on-web">
+                  You can check what slynk.me sends everyone, though not, from inside this page, what it sent you. Each version
+                  is built by GitHub from Slynk’s published code, not by hand, with a list of every file’s fingerprint (its
+                  SHA-256) kept with the code, and the foot of Slynk’s page names the version. The same code always builds to
+                  exactly the same files, so anyone can rebuild it and compare, and a short script that comes with the code
+                  compares every file slynk.me serves with that list, so a file changed for everyone would be noticed.
+                </p>
+                <p class="on-web">
+                  What no outside check can catch is a changed page sent to one person, while everyone who checks gets the real
+                  one. Nor can a page vouch for itself: a changed one could name any version at its foot. Only a check made by your
+                  own browser as the files arrive could catch that, such as an extension that checks each one against the
+                  published list. None exists for Slynk yet.<!-- release --> Or use <a href="#download">the desktop app</a>: you check its fingerprint once, when you
+                  download it, and it runs those same files from your own computer every time.<!-- /release -->
+                </p>
+                <p class="source-link" data-source="deploy/check-site.sh"><a target="_blank" rel="noopener noreferrer">See the checking script</a></p>
+              </details>
+              <details id="credits">
+                <summary>Credits and licences</summary>
+                <p>Slynk stands on other people’s work, and thanks them all.</p>
+                <ul class="doc-list">
+                  <li>
+                    <strong>The xx network:</strong> David Chaum’s cMix, and the xx foundation’s network and software (BSD
+                    2-Clause), kept running by its node and gateway operators.
+                  </li>
+                  <li>
+                    <strong>Rick Carback</strong>, who has contributed more than anyone else to the xx software Slynk builds on.
+                  </li>
+                  <li>
+                    <strong>Keith Millette’s fork of the xx software</strong>, whose reliability fixes Slynk relies on (BSD
+                    2-Clause).
+                  </li>
+                  <li>
+                    <strong>In the page:</strong> lean-qr (MIT) draws QR codes and jsQR (Apache-2.0) reads them; fflate (MIT)
+                    makes zip files and reads Office files; @xmldom/xmldom (MIT) reads documents’ XML; pdf-lib (MIT, with
+                    pako, tslib and its own fonts) cleans PDFs and makes them smaller; pdf.js (Apache-2.0) shows PDF previews;
+                    Vite and Rolldown (MIT) put the page together.
+                  </li>
+                  <li>
+                    <strong>In the mixnet engine:</strong> the Go language’s own code (BSD 3-Clause) and about 50 Go modules
+                    from the xx network and others, under the BSD, MIT, Apache-2.0, ISC and CC0 licences.
+                  </li>
+                  <li>
+                    <strong>Word lists and data:</strong> the BIP-39 word list, for password suggestions and an inbox’s 12
+                    words; two diceware word lists (the EFF’s, and Arnold Reinhold’s original) inside the xx software; Adobe’s
+                    measurements of standard PDF fonts, inside pdf-lib; and Unicode’s list of look-alike letters, for warning
+                    about look-alike names.
+                  </li>
+                </ul>
+                <p><a href="/licenses.txt" target="_blank" rel="noopener">Every licence in full</a></p>
+              </details>
+            </div>
+            <p class="section-close"><button class="link-btn" type="button" data-close-section>Close this section</button></p>
+          </div>
+        </details>
+
+        <h2 id="origins">Where it comes from</h2>
+        <p>
+          In 1981, the cryptographer David Chaum published the idea of a <em>mix network</em>: messages pass through a
+          chain of computers that each shuffle them, so they can’t easily be traced back to whoever sent them. In 2016,
+          he and six colleagues published <em>cMix</em>, a much faster kind that does its heavy maths ahead of time. The
+          xx network, which Chaum founded, launched in November 2021 and runs cMix today.
+        </p>
+        <p>
+          The idea running through Chaum’s work, from untraceable mail to private payments and secret ballots, is that
+          ordinary people should be able to communicate privately. Slynk follows it in a small way, bringing together two
+          ideas long hoped for on the xx network: sending files privately over the mixnet, and a safe way for people to
+          raise concerns.
+        </p>
+        <p>
+          Slynk is an independent, unfunded project, offered freely to the xx community and to anyone who needs it. It
+          isn’t made or run by the xx foundation. Thanks to the foundation and Rick Carback for the open-source software it
+          builds on, and to Keith Millette for his reliability fixes.
+        </p>
+
+        <p class="doc-back doc-end"><a class="btn grad-btn" href="/">Send something with Slynk</a></p>
+      </main>
+
+      <footer class="footer">
+        <span>Slynk · built on the <a href="https://xx.network" target="_blank" rel="noopener noreferrer">xx network</a></span>
+        <span>Open source · BSD 2-Clause</span>
+      </footer>
+    </div>
+
+    <!-- Before a link leaves slynk.me: where it goes, then a new tab. The same popup as a web link in a message (ui/linkWarn.ts, texts from inbox/inboxCopy.ts). -->
+    <dialog id="link-warn" class="sheet" aria-labelledby="link-warn-title" aria-describedby="link-warn-text link-warn-careful">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="link-warn-title" tabindex="-1" autofocus></h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <div class="link-warn-box">
+          <p class="link-warn-host" id="link-warn-host"></p>
+          <button class="field-btn link-warn-copy" id="link-warn-copy" type="button" data-copy-label="LINK_COPY" data-copied="false">
+            <svg class="copy-do" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2" /><path d="M15.5 8.5V5a1.5 1.5 0 0 0-1.5-1.5H5A1.5 1.5 0 0 0 3.5 5v9A1.5 1.5 0 0 0 5 15.5h3.5" /></svg>
+            <svg class="copy-done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+          </button>
+        </div>
+        <p class="sr-only" id="link-warn-said" role="status" aria-live="polite"></p>
+        <p class="link-warn-full" id="link-warn-full" hidden></p>
+        <p id="link-warn-text"></p>
+        <p class="link-warn-careful" id="link-warn-careful" data-copy="LINK_CAREFUL" hidden></p>
+        <div class="sheet-foot row link-warn-foot">
+          <a class="btn grad-btn" id="link-warn-go" target="_blank" rel="noopener noreferrer" data-copy="LINK_GO"></a>
+          <button class="btn" type="button" data-close data-copy="LINK_CANCEL"></button>
+        </div>
+      </div>
+    </dialog>
+    <script type="module" src="/src/about.ts"></script>
+  </body>
+</html>

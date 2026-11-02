@@ -1,0 +1,13 @@
+#!/bin/sh
+# certbot runs this after getting or renewing a certificate (installed as
+# /etc/letsencrypt/renewal-hooks/deploy/keyserver). It copies the key server's
+# certificate where the service can read it, then reloads it: the key server
+# picks the new one up without restarting, so nothing leaves its memory.
+set -eu
+case "${RENEWED_DOMAINS:-}" in
+*k.slynk.me*) ;;
+*) exit 0 ;;
+esac
+install -m 0640 -o root -g keyserver "$RENEWED_LINEAGE/fullchain.pem" /etc/keyserver/tls/fullchain.pem
+install -m 0640 -o root -g keyserver "$RENEWED_LINEAGE/privkey.pem" /etc/keyserver/tls/privkey.pem
+systemctl reload keyserver

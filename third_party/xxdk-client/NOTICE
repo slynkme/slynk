@@ -1,0 +1,17 @@
+xxDK (xx network client SDK) — Courier fork
+Original work Copyright (c) 2020 xx network SEZC
+Modifications  Copyright (c) 2026 Keith Millette
+
+Licensed under the BSD 2-Clause License (see LICENSE).
+
+This is a fork of gitlab.com/elixxir/client/v4 at tag v4.8.4 (commit 92631c67),
+published as gitlab.com/keith16/client and tagged v4.8.5-courier.0. The module
+path is kept canonical (gitlab.com/elixxir/client/v4). It adds 11 functional
+commits used by the Courier client engine: gateway pool observability and
+reselection, cMix send-reliability instrumentation and too-late-round skipping,
+two channels lease-machinery bug fixes, and device-side channel mention pings.
+
+The modifications are contributed under the same BSD 2-Clause license as the
+original, so the combined work may be merged upstream with no relicensing.
+
+See FORK.md for the full change list and how to inspect the exact diff.

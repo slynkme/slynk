@@ -1,0 +1,45 @@
+#!/bin/sh
+# /usr/local/sbin/slynk-activate RELEASE: make a build that deploy.sh copied to
+# /srv/slynk/releases/RELEASE (with RELEASE.headers.caddy beside it) the live
+# site. It checks Caddy accepts the build's security headers first, then
+# switches in one step, so a visitor gets either the old build or the new one.
+# The three newest builds stay: activating an older one's name rolls back.
+set -eu
+rel=${1:-}
+case $rel in '' | *[!0-9a-f]*)
+	echo "usage: slynk-activate RELEASE (a build's commit, as in /srv/slynk/releases)" >&2
+	exit 2
+	;;
+esac
+base=/srv/slynk
+dir=$base/releases/$rel
+conf=/etc/caddy/slynk
+if [ ! -f "$dir/index.html" ] || [ ! -f "$dir.headers.caddy" ]; then
+	echo "No build $rel in $base/releases." >&2
+	exit 1
+fi
+
+# The new headers, checked with the whole configuration before anything changes.
+cp "$conf/headers.caddy" "$conf/headers.caddy.prev" 2>/dev/null || true
+cp "$dir.headers.caddy" "$conf/headers.caddy"
+set -a
+. "$conf/env"
+set +a
+if ! out=$(caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile 2>&1); then
+	if [ -f "$conf/headers.caddy.prev" ]; then mv "$conf/headers.caddy.prev" "$conf/headers.caddy"; fi
+	printf '%s\n' "$out" | tail -n 3 >&2
+	echo "Caddy refused build $rel's settings; the site is unchanged." >&2
+	exit 1
+fi
+
+ln -sfn "releases/$rel" "$base/current.new"
+mv -T "$base/current.new" "$base/current"
+if systemctl is-active --quiet caddy; then systemctl reload caddy; fi
+touch "$dir"
+
+# Keep the three newest builds (by when they went live) and the live one.
+ls -1t "$base/releases" | grep -E '^[0-9a-f]+$' | tail -n +4 | while read -r old; do
+	[ "$old" = "$rel" ] && continue
+	rm -rf "${base:?}/releases/$old" "$base/releases/$old.headers.caddy"
+done
+echo "Live: build $rel."

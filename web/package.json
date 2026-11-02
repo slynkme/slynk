@@ -1,0 +1,26 @@
+{
+  "name": "slynk-web",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build:core": "bash ../core/build-wasm.sh",
+    "build": "npm run build:core && tsc --noEmit && vite build",
+    "build:deploy": "npm run build && node scripts/precompress.mjs --drop-raw && node scripts/fingerprints.ts",
+    "preview": "vite preview",
+    "test": "node --test 'test/**/*.test.ts'"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vite": "8.3.4"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "0.9.12",
+    "fflate": "0.8.3",
+    "jsqr": "1.4.0",
+    "lean-qr": "2.7.4",
+    "pdf-lib": "1.17.1",
+    "pdfjs-dist": "6.4.299"
+  }
+}

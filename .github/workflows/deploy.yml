@@ -1,0 +1,70 @@
+# Builds the site on every push to main and publishes the result to the
+# "deploy" branch, which deploy/webserver/deploy.sh puts on the web server (a
+# host that reads .htaccess files can pull the branch instead).
+name: Build and publish site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-site
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # An exact version, the one used locally: "24" would take whichever Node
+      # 24 the runner already has, which can lag behind security fixes.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.22.1
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      # Must match the Go version used locally: wasm_exec.js ships with Go.
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: 1.27.2
+          cache-dependency-path: core/go.sum
+
+      # The same commit always builds to the same bytes, so anyone can rebuild
+      # it this way and match web/dist/SHA256SUMS.txt, the SHA-256 of every
+      # file, which goes into the deploy branch with them.
+      - name: Build
+        working-directory: web
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build:deploy
+
+      - name: Publish to the deploy branch
+        working-directory: web/dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          src="$(git -C "$GITHUB_WORKSPACE" rev-parse --short HEAD)"
+          git init -q -b deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          # Build on top of the previous deploy commit so a host pulling the
+          # branch can fast-forward; the tree is exactly this build.
+          if git fetch -q --depth=1 origin deploy; then
+            git reset -q --soft FETCH_HEAD
+          fi
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Build unchanged; nothing to publish."
+            exit 0
+          fi
+          git commit -q -m "Build of ${src}"
+          git push -q origin deploy
+          echo "Published build of ${src} to the deploy branch."

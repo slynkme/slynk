@@ -1,0 +1,12 @@
+# /etc/apt/sources.list.d/caddy-stable.sources: Caddy from its own signed
+# package source. Debian 13's Caddy is 2.6, which offers no quantum-safe key
+# exchange; Caddy's own (2.11 here) does by default. Its key, saved as
+# /etc/apt/keyrings/caddy-stable.asc from
+# https://dl.cloudsmith.io/public/caddy/stable/gpg.key, has the fingerprint
+# 6576 0C51 EDEA 2017 CEA2 CA15 155B 6D79 CA56 EA34. caddy-stable.pref lets
+# this source supply the caddy package and nothing else.
+Types: deb
+URIs: https://dl.cloudsmith.io/public/caddy/stable/deb/debian
+Suites: any-version
+Components: main
+Signed-By: /etc/apt/keyrings/caddy-stable.asc

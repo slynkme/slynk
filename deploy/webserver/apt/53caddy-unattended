@@ -1,0 +1,6 @@
+// /etc/apt/apt.conf.d/53slynk-caddy-unattended: Caddy's updates, from its own
+// package source (caddy-stable.sources), install by themselves too, like
+// Debian's security fixes (needs unattended-upgrades, as on the key server).
+Unattended-Upgrade::Origins-Pattern {
+	"origin=cloudsmith/caddy/stable,archive=any-version";
+};

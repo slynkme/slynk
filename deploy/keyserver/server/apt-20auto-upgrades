@@ -1,0 +1,7 @@
+// /etc/apt/apt.conf.d/20auto-upgrades: check for updates and install
+// security fixes every day (needs: apt install unattended-upgrades), and empty
+// the download cache weekly, so nothing piles up on the disk.
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+APT::Periodic::AutocleanInterval "7";
+APT::Periodic::CleanInterval "7";

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Slynk.app (build-test.sh). LSBackgroundOnly: no Dock icon or menu of its own, since the program shows nothing
+     itself; Slynk's window is the browser's. LSMinimumSystemVersion: what Go 1.27's linker targets. -->
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>Slynk</string>
+	<key>CFBundleExecutable</key>
+	<string>slynk</string>
+	<key>CFBundleIconFile</key>
+	<string>slynk</string>
+	<key>CFBundleIdentifier</key>
+	<string>me.slynk.Slynk</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Slynk</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1</string>
+	<key>CFBundleVersion</key>
+	<string>0.1</string>
+	<key>LSBackgroundOnly</key>
+	<true/>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+</dict>
+</plist>

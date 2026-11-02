@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Preparing files · example</title>
+    <link rel="stylesheet" href="./example.css" />
+    <script type="module" src="./main.ts"></script>
+  </head>
+  <body>
+    <main>
+      <h1>Preparing files for the mixnet</h1>
+      <p class="lead">
+        An example of Slynk’s file pipeline, for your own app. Each file is cleaned of hidden details, made smaller,
+        then compressed, all in this browser, with Slynk’s own defaults chosen below. Nothing is sent anywhere.
+      </p>
+
+      <section>
+        <h2>Files</h2>
+        <div id="drop" class="drop">
+          <p>
+            <label class="button" for="file">Choose files</label>
+            <input type="file" id="file" class="sr-only" multiple />
+          </p>
+          <p class="muted">or drop them here.</p>
+        </div>
+        <p id="chosen-help" class="muted" hidden>Each file can go uncleaned or at full size, whatever the options say.</p>
+        <ul id="chosen" class="chosen" hidden></ul>
+      </section>
+
+      <section>
+        <h2>Budget</h2>
+        <fieldset class="choices">
+          <legend class="sr-only">What the files must fit in together</legend>
+          <label><input type="radio" name="budget" value="2000000" checked /> 2,000,000 bytes: Slynk’s limit (its fork of xxDK)</label>
+          <label><input type="radio" name="budget" value="250000" /> 250,000 bytes: stock xxDK’s file-transfer cap</label>
+          <label>
+            <input type="radio" name="budget" value="custom" /> Another:
+            <input type="number" id="custom" min="1" step="1" inputmode="numeric" placeholder="bytes" /> bytes
+          </label>
+        </fieldset>
+      </section>
+
+      <section>
+        <h2>Options</h2>
+        <p class="muted">As in Slynk’s Settings; Slynk’s defaults are chosen.</p>
+        <label class="row"><input type="checkbox" id="clean" checked /> Remove hidden details from files</label>
+        <fieldset class="choices">
+          <legend>Make files smaller</legend>
+          <label><input type="radio" name="shrink" value="smallest" checked /> Smallest: every file as small as its level</label>
+          <label><input type="radio" name="shrink" value="fit" /> To fit: only when they don’t fit, and only as much as needed</label>
+          <label><input type="radio" name="shrink" value="off" /> Off: full size</label>
+        </fieldset>
+        <p class="row">
+          <label for="photo-level">Smallest photos</label>
+          <select id="photo-level">
+            <option value="least" selected>Least (1,280 px, 40%)</option>
+            <option value="medium">Medium (1,280 px, 70%)</option>
+            <option value="good">Good (up to 2,048 px, 85%)</option>
+          </select>
+        </p>
+        <p class="row">
+          <label for="video-level">Smallest videos</label>
+          <select id="video-level">
+            <option value="180">180p</option>
+            <option value="240" selected>240p</option>
+            <option value="360">360p</option>
+          </select>
+        </p>
+        <p class="row">
+          <label for="compression">Compression</label>
+          <select id="compression">
+            <option value="brotli" selected>Stronger (Brotli, else deflate)</option>
+            <option value="deflate">Deflate</option>
+            <option value="none">None</option>
+          </select>
+        </p>
+        <p class="row">
+          <label for="framing">Count them</label>
+          <select id="framing">
+            <option value="slynk" selected>As Slynk sends them (its envelope and one-time link)</option>
+            <option value="none">Alone (their compressed bytes)</option>
+          </select>
+        </p>
+        <label class="row"><input type="checkbox" id="plain-names" /> Plain file names</label>
+      </section>
+
+      <section>
+        <p>
+          <button type="button" id="go" disabled>Prepare</button>
+          <button type="button" id="stop" class="quiet" hidden>Stop</button>
+        </p>
+        <p id="status" class="muted" aria-live="polite"></p>
+        <div class="bar" id="bar" hidden><div class="fill" id="fill"></div></div>
+      </section>
+
+      <section id="results" hidden>
+        <h2>Prepared</h2>
+        <p id="total" class="total"></p>
+        <ul id="list" class="list"></ul>
+      </section>
+    </main>
+  </body>
+</html>

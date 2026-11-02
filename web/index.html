@@ -1,0 +1,1717 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="description" content="Send files and secrets through the xx network. Encrypted in your browser, then shuffled in with everyone else's traffic. No account needed." />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="icon" href="/favicon.svg" />
+    <title>Slynk</title>
+  </head>
+  <body>
+    <canvas id="spring" class="spring" aria-hidden="true"></canvas>
+
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" id="brand" href="/" aria-label="Slynk home">
+          <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+            <defs>
+              <linearGradient id="brand-g" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#b69cff" />
+                <stop offset="1" stop-color="#2ee6ff" />
+              </linearGradient>
+            </defs>
+            <g fill="none" stroke="url(#brand-g)" stroke-width="5" stroke-linecap="round">
+              <ellipse cx="17" cy="32" rx="6" ry="18" transform="rotate(-18 17 32)" />
+              <ellipse cx="27" cy="32" rx="6" ry="18" transform="rotate(-18 27 32)" />
+              <ellipse cx="37" cy="32" rx="6" ry="18" transform="rotate(-18 37 32)" />
+              <ellipse cx="47" cy="32" rx="6" ry="18" transform="rotate(-18 47 32)" />
+            </g>
+          </svg>
+          <span class="brand-name">Slynk</span>
+        </a>
+        <div class="top-actions">
+          <button id="net" class="net" type="button" data-state="idle" title="Mixnet connection">
+            <span class="net-dot" aria-hidden="true"></span>
+            <span id="net-text" aria-live="polite">Connects when needed</span>
+          </button>
+          <button id="open-settings" class="icon-btn" type="button" aria-label="Settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+              <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
+              <circle cx="15" cy="7" r="2.2" />
+              <circle cx="9" cy="17" r="2.2" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="hero" id="hero">
+          <p class="eyebrow" id="hero-eyebrow">Private file &amp; secret drop</p>
+          <h1 id="hero-title">Slynk it through <span class="grad">the mixnet.</span></h1>
+          <p class="lede" id="hero-lede">
+            Encrypted in your browser and mixed in with everyone else’s traffic. You get a private link to share.
+            No account. No tracking. Slynk never sees what you send, let alone keeps&nbsp;it.
+          </p>
+        </section>
+
+        <!-- An unlocked inbox, on a screen of its own: a simple mail client, with a chat for each
+             sender who lets the owner reply (texts from inbox/inboxCopy.ts) -->
+        <section class="card inbox-card" id="inbox-card" aria-labelledby="ib-name" hidden>
+          <button class="back-chip" id="ib-home" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg><span data-copy="BACK_HOME"></span></button>
+          <div class="ib-head">
+            <span class="ib-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13.5 6 6.6A2 2 0 0 1 7.9 5.3h8.2A2 2 0 0 1 18 6.6l2.5 6.9" /><path d="M3.5 13.5V18a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-4.5H16l-1.5 2.3h-5L8 13.5z" /></svg></span>
+            <span class="ib-meta">
+              <span class="opts-label" data-copy="OWNER_KIND"></span>
+              <strong class="inbox-name" id="ib-name"></strong>
+              <span class="ib-keep-state" id="ib-keep-text"></span>
+            </span>
+            <span class="ib-actions">
+              <button class="btn mini" id="ib-share" type="button" aria-expanded="false" aria-controls="ib-share-box" data-copy="OWNER_SHARE"></button>
+              <button class="btn mini ghost" id="ib-lock" type="button" data-copy="OWNER_LOCK"></button>
+              <span class="menu-wrap">
+                <button class="icon-btn small" id="ib-more-go" type="button" aria-label="More for your inbox"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="12" r="1.7" /><circle cx="12" cy="12" r="1.7" /><circle cx="18.5" cy="12" r="1.7" /></svg></button>
+                <div class="menu" id="ib-more-menu" hidden></div>
+              </span>
+            </span>
+          </div>
+          <div class="ib-form" id="ib-rename-box" hidden>
+            <label class="opts-label" for="ib-rename-field" data-copy="OWNER_RENAME_LABEL"></label>
+            <div class="linkbox">
+              <input id="ib-rename-field" type="text" autocomplete="off" spellcheck="false" />
+              <button class="btn" id="ib-rename-save" type="button" data-copy="OWNER_RENAME_SAVE"></button>
+              <button class="btn ghost" id="ib-rename-cancel" type="button" data-copy="OWNER_RENAME_CANCEL"></button>
+            </div>
+          </div>
+          <div class="ib-share" id="ib-share-box" hidden>
+            <!-- Its two addresses as tabs, only here and on the ready screen: it opens on the one shared last -->
+            <div class="addr-tabs-row">
+              <div class="addr-tabs ib-tabs" id="ib-tabs" role="tablist" data-copy-label="TABS_LABEL">
+                <button class="addr-tab" id="ib-tab-secure" type="button" role="tab" aria-selected="true" aria-controls="ib-share-panel" data-qs="false"><span class="addr-tab-name" data-copy="TAB_SECURE"></span></button>
+                <button class="addr-tab" id="ib-tab-qs" type="button" role="tab" aria-selected="false" aria-controls="ib-share-panel" data-qs="true" tabindex="-1"><span class="addr-tab-name" data-copy="TAB_QS"></span></button>
+              </div>
+              <button class="icon-btn small addr-what" id="ib-tabs-what" type="button" data-qs-why="inbox" data-copy-label="TABS_WHAT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5.5M12 7.6v.2" /></svg></button>
+            </div>
+            <div class="addr-panel" id="ib-share-panel" role="tabpanel" aria-labelledby="ib-tab-secure">
+              <div class="linkbox">
+                <input id="ib-link" readonly aria-label="Your inbox's address" spellcheck="false" />
+                <button class="btn grad-btn" id="ib-copy" type="button">Copy</button>
+              </div>
+              <div class="qr" id="ib-qr" role="img" aria-label="QR code of your inbox's address"></div>
+              <button class="btn small center" id="ib-save-qr" type="button" data-copy="READY_SAVE_QR"></button>
+            </div>
+          </div>
+          <div class="confirm" id="ib-lock-ask" hidden>
+            <p id="ib-lock-text"></p>
+            <span class="stall-buttons">
+              <button class="btn mini" id="ib-lock-yes" type="button" data-copy="OWNER_LOCK_YES"></button>
+              <button class="btn mini ghost" id="ib-lock-no" type="button" data-copy="OWNER_LOCK_NO"></button>
+            </span>
+          </div>
+          <div class="confirm" id="ib-forget-ask" hidden>
+            <p id="ib-forget-text" data-copy="FORGET_ASK"></p>
+            <span class="stall-buttons">
+              <button class="btn mini" id="ib-forget-yes" type="button" data-copy="FORGET_YES"></button>
+              <button class="btn mini ghost" id="ib-forget-no" type="button" data-copy="FORGET_NO"></button>
+            </span>
+          </div>
+          <!-- "Forget my passphrase on this device" asks first: the words may be kept nowhere else -->
+          <div class="confirm" id="ib-words-ask" hidden>
+            <p data-copy="WORDS_FORGET_ASK"></p>
+            <span class="stall-buttons">
+              <button class="btn mini" id="ib-words-yes" type="button" data-copy="WORDS_FORGET_YES"></button>
+              <button class="btn mini ghost" id="ib-words-no" type="button" data-copy="WORDS_FORGET_NO"></button>
+            </span>
+          </div>
+          <!-- "Remember my passphrase on this device…" from the inbox's menu: the warnings, and the words typed once more -->
+          <div class="ib-form remember-ask" id="ib-remember-ask" hidden>
+            <div class="remember-warn" id="ib-remember-warn" role="note" tabindex="-1">
+              <p class="remember-warn-title" data-copy="REMEMBER_WARN_TITLE"></p>
+              <ul class="remember-risks" data-risks></ul>
+              <p class="remember-more"><a href="/about/#inbox-remember" target="_blank" rel="noopener" data-copy="OPEN_KEEP_MORE"></a></p>
+            </div>
+            <label class="opts-label" for="ib-remember-words" data-copy="REMEMBER_TYPE"></label>
+            <span class="field-wrap">
+              <input id="ib-remember-words" aria-describedby="ib-remember-warn" class="pw-input" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+              <button class="field-btn eye-btn" type="button" aria-pressed="false" aria-controls="ib-remember-words" id="ib-remember-words-eye">
+                <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+              </button>
+            </span>
+            <p class="note pw-error" id="ib-remember-error" role="alert" hidden></p>
+            <!-- An optional password for the remembered words: with one, they're encrypted here, and the warnings above say what it changes; hidden as it's typed, with the eye to check it, and typed again -->
+            <div class="remember-pw" id="ib-remember-pw-box">
+              <label class="opts-label" for="ib-remember-pw" data-copy="REMEMBER_PW_LABEL"></label>
+              <span class="field-wrap">
+                <input id="ib-remember-pw" class="pw-input" type="password" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" aria-describedby="ib-remember-pw-help" data-remember-pw="ib-remember-warn" />
+                <button class="field-btn eye-btn" type="button" aria-pressed="false" aria-controls="ib-remember-pw" data-pw-eye>
+                  <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                  <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                </button>
+              </span>
+              <!-- Typed again, to be sure: shown once a password is typed -->
+              <div class="remember-pw-again" id="ib-remember-pw2-box" hidden>
+                <label class="opts-label" for="ib-remember-pw2" data-copy="REMEMBER_PW_AGAIN"></label>
+                <span class="field-wrap">
+                  <input id="ib-remember-pw2" class="pw-input" type="password" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+                  <button class="field-btn eye-btn" type="button" aria-pressed="false" aria-controls="ib-remember-pw2" data-pw-eye>
+                    <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                    <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                  </button>
+                </span>
+              </div>
+              <p class="note" id="ib-remember-pw-help" data-copy="REMEMBER_PW_HELP"></p>
+              <p class="note pw-error" id="ib-remember-pw-error" role="alert" hidden></p>
+            </div>
+
+            <span class="stall-buttons">
+              <button class="btn mini" id="ib-remember-yes" type="button" data-copy="REMEMBER_YES"></button>
+              <button class="btn mini ghost" id="ib-remember-no" type="button" data-copy="REMEMBER_NO"></button>
+            </span>
+          </div>
+          <!-- "Back up your passphrase…" from the inbox's menu: the file is otherwise
+               offered only as the inbox is made. The words aren't kept once it's unlocked, so they're typed once more,
+               and checked as this inbox's before anything is saved (inbox/keyFileBox.ts). -->
+          <div class="ib-form savefile-ask" id="ib-savefile-ask" hidden>
+            <p class="note" data-copy="SAVEFILE_HELP"></p>
+            <label class="opts-label" for="ib-savefile-words" data-copy="SAVEFILE_TYPE"></label>
+            <span class="field-wrap">
+              <input id="ib-savefile-words" class="pw-input" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+              <button class="field-btn eye-btn" type="button" aria-pressed="false" aria-controls="ib-savefile-words" id="ib-savefile-words-eye">
+                <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+              </button>
+            </span>
+            <!-- Its messages too, a backup of the whole inbox: shown while it holds any -->
+            <label class="setting keep-setting" id="ib-savefile-all-row" hidden>
+              <span class="setting-text"><strong data-copy="SAVEFILE_ALL"></strong><span id="ib-savefile-all-help"></span></span>
+              <input type="checkbox" class="switch" id="ib-savefile-all" autocomplete="off" />
+            </label>
+            <div class="keyfile" id="ib-kf">
+              <label class="opts-label" for="ib-kf-pw" data-copy="KEYFILE_PASSWORD"></label>
+              <!-- Blank, hidden as it's typed, with the eye to check it, like the site's other password boxes -->
+              <span class="field-wrap">
+                <input id="ib-kf-pw" class="pw-input" type="password" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+                <button class="field-btn eye-btn" type="button" aria-pressed="false" aria-controls="ib-kf-pw" data-pw-eye>
+                  <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                  <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                </button>
+              </span>
+              <!-- Typed again, to be sure: shown once a password is typed -->
+              <div class="kf-again" id="ib-kf-pw2-box" hidden>
+                <label class="opts-label" for="ib-kf-pw2" data-copy="REMEMBER_PW_AGAIN"></label>
+                <span class="field-wrap">
+                  <input id="ib-kf-pw2" class="pw-input" type="password" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+                  <button class="field-btn eye-btn" type="button" aria-pressed="false" aria-controls="ib-kf-pw2" data-pw-eye>
+                    <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                    <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                  </button>
+                </span>
+              </div>
+              <p class="kf-actions">
+                <button class="btn small" id="ib-kf-new" type="button"></button>
+                <button class="btn small" id="ib-kf-save" type="button" data-copy="KEYFILE_SAVE"></button>
+              </p>
+              <p class="note pw-error" id="ib-kf-error" role="alert" hidden></p>
+            </div>
+            <span class="stall-buttons">
+              <button class="btn mini ghost" id="ib-savefile-close" type="button" data-copy="SAVEFILE_CLOSE"></button>
+            </span>
+          </div>
+          <!-- Blocked senders, from the inbox's menu: each with Show and Unblock -->
+          <div class="ib-form blocked-ask" id="ib-blocked" hidden>
+            <p class="note" data-copy="BLOCKED_HELP"></p>
+            <ul class="blocked-list" id="ib-blocked-list"></ul>
+            <span class="stall-buttons">
+              <button class="btn mini ghost" id="ib-blocked-close" type="button" data-copy="SAVEFILE_CLOSE"></button>
+            </span>
+          </div>
+          <p class="sr-only" id="ib-announce" role="status" aria-live="polite"></p>
+          <!-- The list: how opening is going, folders, then the shown folder's messages and conversations -->
+          <div class="ib-mail" id="ib-mail">
+            <!-- How opening is going, in a card of its own: a spinner while it works, a tick when it's done -->
+            <div class="ib-status-card" id="ib-status-card" data-state="busy">
+              <span class="ib-status-icon" aria-hidden="true">
+                <svg class="si-done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12.5l4 4L18 8" /></svg>
+                <svg class="si-failed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 7v6.5M12 17.2v.3" /></svg>
+              </span>
+              <p class="ib-status" id="ib-status" tabindex="-1"></p>
+              <button class="btn mini" id="ib-retry" type="button" data-copy="OWNER_RETRY" hidden></button>
+            </div>
+            <div class="keep-offer" id="ib-keep-offer" hidden>
+              <p><span data-copy="KEEP_OFFER"></span> <a href="/about/#inbox-keep" target="_blank" rel="noopener" data-copy="OPEN_KEEP_MORE"></a></p>
+              <span class="stall-buttons">
+                <button class="btn mini" id="ib-offer-yes" type="button" data-copy="KEEP_START"></button>
+                <button class="btn mini ghost" id="ib-offer-no" type="button" data-copy="KEEP_OFFER_NO"></button>
+              </span>
+            </div>
+            <p class="note once" id="ib-flood" data-copy="OWNER_FLOOD" hidden></p>
+            <p class="note" id="ib-care" data-copy="DROP_CARE" hidden></p>
+            <!-- The list and what works on it, on a panel of its own -->
+            <div class="ib-panel">
+            <!-- New message beside the folders, its step under it: write to another inbox, by its address or a saved name -->
+            <div class="ib-listbar">
+              <button class="btn mini grad-btn ib-compose" id="ib-new-go-open" type="button" aria-expanded="false" aria-controls="ib-new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg><span data-copy="COMPOSE"></span></button>
+              <div class="ib-form ib-new" id="ib-new" hidden>
+                <label class="opts-label" for="ib-new-field" id="ib-new-label"></label>
+                <div class="linkbox">
+                  <span class="field-wrap">
+                    <input id="ib-new-field" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" list="ib-new-names" />
+                    <button class="field-btn" id="ib-new-scan" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3l2-3h6l2 3h3a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="3.6" /></svg></button>
+                  </span>
+                  <button class="btn" id="ib-new-go" type="button" data-copy="SEND_TO_GO"></button>
+                </div>
+                <!-- Which kind of inbox the box holds, once it holds one: its marker and name -->
+                <p class="new-kind" id="ib-new-kind" role="status" hidden></p>
+                <datalist id="ib-new-names"></datalist>
+                <p class="note pw-error" id="ib-new-error" role="alert" hidden></p>
+                <div class="book" id="book" hidden>
+                  <span class="opts-label" id="book-title" data-copy="BOOK_TITLE"></span>
+                  <ul class="book-list" id="book-list" aria-labelledby="book-title"></ul>
+                </div>
+                <button class="btn mini ghost" id="ib-new-cancel" type="button" data-copy="FOLDER_CANCEL"></button>
+              </div>
+              <!-- The folders, and Select at the end of their first line: they move under New message together -->
+              <div class="ib-folders-row">
+                <div class="ib-folders-line">
+                  <div class="folders" id="ib-folders" role="group" aria-label="Folders"></div>
+                  <!-- Select several at once: a tick box on every row, and the bar under the list -->
+                  <button class="btn mini ib-select" id="ib-select" type="button" aria-pressed="false" aria-controls="ib-list" data-copy-label="SELECT" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M8 12.3l2.8 2.8L16 9.6" /></svg><span class="ib-select-word" data-copy="SELECT"></span></button>
+                </div>
+              </div>
+              <!-- The owner's own folders, on a line of their own under a small heading -->
+              <div class="own-folders" id="ib-own-folders" hidden>
+                <span class="own-folders-label" id="ib-own-folders-label" data-copy="FOLDERS_OWN"></span>
+                <div class="folders" id="ib-own-folders-list" role="group" aria-labelledby="ib-own-folders-label"></div>
+              </div>
+            </div>
+            <div class="folder-tools" id="ib-folder-tools" hidden>
+              <button class="btn mini ghost" id="ib-folder-rename" type="button" data-copy="FOLDER_RENAME"></button>
+              <button class="btn mini ghost" id="ib-folder-delete" type="button" data-copy="FOLDER_DELETE"></button>
+            </div>
+            <div class="ib-form" id="ib-folder-form" hidden>
+              <label class="opts-label" for="ib-folder-field" data-copy="FOLDER_NAME_LABEL"></label>
+              <div class="linkbox">
+                <input id="ib-folder-field" type="text" autocomplete="off" spellcheck="false" />
+                <button class="btn" id="ib-folder-save" type="button" data-copy="FOLDER_CREATE"></button>
+                <button class="btn ghost" id="ib-folder-cancel" type="button" data-copy="FOLDER_CANCEL"></button>
+              </div>
+              <p class="note pw-error" id="ib-folder-error" role="alert" hidden></p>
+            </div>
+            <div class="confirm" id="ib-folder-ask" hidden>
+              <p id="ib-folder-ask-text"></p>
+              <span class="stall-buttons">
+                <button class="btn mini" id="ib-folder-yes" type="button" data-copy="FOLDER_DELETE_YES"></button>
+                <button class="btn mini ghost" id="ib-folder-no" type="button" data-copy="FOLDER_DELETE_NO"></button>
+              </span>
+            </div>
+            <div class="ib-listwrap">
+              <!-- What's done to the messages ticked: first for the keyboard and screen readers, shown under the list,
+                   at the foot of the screen while the list scrolls -->
+              <div class="select-bar" id="ib-select-bar" role="region" data-copy-label="SELECT_BAR" hidden>
+                <div class="select-top">
+                  <p class="select-count" id="ib-sel-count" role="status"></p>
+                  <button class="link-btn" id="ib-sel-all" type="button"></button>
+                  <button class="link-btn" id="ib-sel-cancel" type="button" data-copy="SELECT_CANCEL"></button>
+                </div>
+                <div class="select-actions">
+                  <button class="btn mini" id="ib-sel-archive" type="button"></button>
+                  <span class="menu-wrap" id="ib-sel-move-wrap">
+                    <button class="btn mini" id="ib-sel-move" type="button" data-copy="SELECT_MOVE"></button>
+                    <div class="menu" id="ib-sel-move-menu" hidden></div>
+                  </span>
+                  <button class="btn mini" id="ib-sel-read" type="button"></button>
+                  <button class="btn mini danger-btn" id="ib-sel-remove" type="button" data-copy="SELECT_REMOVE"></button>
+                </div>
+                <div class="confirm" id="ib-sel-remove-ask" hidden>
+                  <p id="ib-sel-remove-text"></p>
+                  <span class="stall-buttons">
+                    <button class="btn mini" id="ib-sel-remove-yes" type="button"></button>
+                    <button class="btn mini ghost" id="ib-sel-remove-no" type="button"></button>
+                  </span>
+                </div>
+              </div>
+              <ul class="mail" id="ib-list" aria-label="Inbox" hidden></ul>
+            </div>
+            <p class="note" id="ib-empty" hidden></p>
+            <p class="note" id="ib-more" hidden></p>
+            </div>
+            <details class="more-about">
+              <summary data-copy="MORE_ABOUT"></summary>
+              <p class="note" data-copy="OWNER_HELD"></p>
+              <p class="note" data-copy="OWNER_HONEST_IP"></p>
+            </details>
+          </div>
+          <!-- A one-way message (from an anonymous sender, the owner's own, files, or the welcome), opened in
+               place: moved into its row under the row's head, and back here, hidden,
+               when it folds. Share, Lock, New message and the folders stay in view above it. -->
+          <div class="mail-open" id="ib-open" hidden>
+            <div class="mail-open-body" id="ib-r-body"></div>
+            <p class="mail-open-more" id="ib-r-extra">
+              <button class="soft-link" id="ib-r-why" type="button" aria-haspopup="dialog" data-copy="WHY_REPLY" hidden></button>
+              <!-- The owner's own message: the inbox it went to, to check later (as the composer shows it) -->
+              <button class="expander" id="ib-r-address-go" type="button" aria-expanded="false" aria-controls="ib-r-address" data-copy="TO_SHOW_ADDRESS" hidden></button>
+            </p>
+            <code class="to-address" id="ib-r-address" hidden></code>
+            <div class="mail-open-actions">
+              <!-- Folds it, as a tap on its row does: first, where the eye starts -->
+              <button class="btn mini ghost" id="ib-r-close" type="button" data-copy="READ_CLOSE"></button>
+              <button class="btn mini grad-btn" id="ib-r-copy" type="button" data-copy="READ_COPY"></button>
+              <button class="btn mini" id="ib-r-archive" type="button"></button>
+              <span class="menu-wrap">
+                <button class="btn mini more-btn" id="ib-r-more" type="button" aria-label="More for this message"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="12" r="1.7" /><circle cx="12" cy="12" r="1.7" /><circle cx="18.5" cy="12" r="1.7" /></svg></button>
+                <div class="menu" id="ib-r-more-menu" hidden></div>
+              </span>
+            </div>
+            <div class="ib-form" id="ib-r-title-box" hidden>
+              <label class="opts-label" for="ib-r-title-field" data-copy="READ_TITLE_LABEL"></label>
+              <div class="linkbox">
+                <input id="ib-r-title-field" type="text" autocomplete="off" spellcheck="false" />
+                <button class="btn" id="ib-r-title-save" type="button" data-copy="READ_TITLE_SAVE"></button>
+              </div>
+            </div>
+            <div class="confirm" id="ib-r-remove-ask" hidden>
+              <p id="ib-r-remove-text"></p>
+              <span class="stall-buttons">
+                <button class="btn mini" id="ib-r-remove-yes" type="button" data-copy="REMOVE_YES"></button>
+                <button class="btn mini ghost" id="ib-r-remove-no" type="button" data-copy="REMOVE_NO"></button>
+              </span>
+            </div>
+          </div>
+          <!-- A conversation with one sender's inbox, as a chat -->
+          <div class="chat" id="ib-chat" hidden>
+            <div class="chat-head">
+              <button class="icon-btn small chat-back" id="ib-c-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button>
+              <span class="avatar" id="ib-c-avatar" aria-hidden="true"></span>
+              <span class="chat-who">
+                <span class="chat-name-row"><h3 class="chat-name" id="ib-c-name" tabindex="-1"></h3><span class="chat-mark" id="ib-c-mark"></span></span>
+                <span class="chat-sub" id="ib-c-sub" hidden></span>
+              </span>
+              <span class="menu-wrap">
+                <button class="icon-btn small" id="ib-c-more" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="12" r="1.7" /><circle cx="12" cy="12" r="1.7" /><circle cx="18.5" cy="12" r="1.7" /></svg></button>
+                <div class="menu" id="ib-c-more-menu" hidden></div>
+              </span>
+            </div>
+            <ul class="name-flags" id="ib-c-flags" hidden></ul>
+            <div class="ib-form" id="ib-c-name-box" hidden>
+              <label class="opts-label" for="ib-c-name-field" data-copy="READ_NAME_LABEL"></label>
+              <div class="linkbox">
+                <input id="ib-c-name-field" type="text" autocomplete="off" spellcheck="false" />
+                <button class="btn" id="ib-c-name-save" type="button" data-copy="READ_NAME_SAVE"></button>
+              </div>
+              <p class="note pw-error" id="ib-c-name-error" role="alert" hidden></p>
+            </div>
+            <div class="confirm" id="ib-c-remove-ask" hidden>
+              <p id="ib-c-remove-text"></p>
+              <span class="stall-buttons">
+                <button class="btn mini" id="ib-c-remove-yes" type="button" data-copy="REMOVE_YES"></button>
+                <button class="btn mini ghost" id="ib-c-remove-no" type="button" data-copy="REMOVE_NO"></button>
+              </span>
+            </div>
+            <!-- Blocking them: what it does, said before it's done -->
+            <div class="confirm" id="ib-c-block-ask" hidden>
+              <p id="ib-c-block-text"></p>
+              <span class="stall-buttons">
+                <button class="btn mini" id="ib-c-block-yes" type="button" data-copy="BLOCK_YES"></button>
+                <button class="btn mini ghost" id="ib-c-block-no" type="button" data-copy="BLOCK_NO"></button>
+              </span>
+            </div>
+            <!-- A blocked sender's conversation, opened from Blocked senders: no replying, and Unblock -->
+            <div class="confirm" id="ib-c-blocked" hidden>
+              <p data-copy="BLOCKED_CHAT"></p>
+              <span class="stall-buttons">
+                <button class="btn mini" id="ib-c-unblock" type="button" data-copy="UNBLOCK"></button>
+              </span>
+            </div>
+            <!-- Stopping a reply's files on their way: its bubble's Cancel asks here -->
+            <div class="confirm" id="ib-c-stop-ask" hidden>
+              <p><strong data-copy="STOP_ASK"></strong> <span data-copy="STOP_WHY"></span></p>
+              <span class="stall-buttons">
+                <button class="btn mini" id="ib-c-stop-yes" type="button" data-copy="STOP_YES"></button>
+                <button class="btn mini ghost" id="ib-c-stop-no" type="button" data-copy="STOP_NO"></button>
+              </span>
+            </div>
+            <ol class="chat-log" id="ib-c-log"></ol>
+            <form class="chat-compose" id="ib-c-form" novalidate>
+              <!-- Files, or a reply too long for one message (INBOX_FILES in site.ts): the
+                   composer's own tray (tray.ts), one for each conversation: its files, the meter,
+                   the offer of smaller copies -->
+              <div class="chat-tray" id="ib-c-tray" hidden>
+                <div id="ib-c-files-slot"></div>
+                <div class="meter" id="ib-c-meter">
+                  <div class="meter-track"><span class="meter-fill" id="ib-c-meter-fill"></span></div>
+                  <div class="meter-info">
+                    <span class="meter-text" id="ib-c-meter-text"></span>
+                    <span class="meter-eta" id="ib-c-meter-eta"></span>
+                    <button class="soft-link meter-why" id="ib-c-meter-working" type="button" aria-haspopup="dialog" hidden>What’s happening?</button>
+                  </div>
+                </div>
+                <div id="ib-c-fit-slot"></div>
+                <p class="note upload-note" id="ib-c-honest" data-copy="TO_UPLOAD_HONEST" hidden></p>
+              </div>
+              <div class="chat-input">
+                <button class="icon-btn chat-attach" id="ib-c-attach" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path transform="rotate(40 12 12)" d="M15.5 8v8a3.5 3.5 0 0 1-7 0V5.5a2.5 2.5 0 0 1 5 0V15a1.5 1.5 0 0 1-3 0V8" /></svg></button>
+                <input type="file" id="ib-c-file" class="sr-only" multiple tabindex="-1" aria-hidden="true" />
+                <label class="sr-only" for="ib-c-text" data-copy="CHAT_LABEL"></label>
+                <textarea id="ib-c-text" rows="1" spellcheck="true" autocomplete="off"></textarea>
+                <button class="btn grad-btn chat-send" id="ib-c-send" type="submit" data-copy="CHAT_SEND"></button>
+              </div>
+              <p class="chat-room" id="ib-c-room" hidden></p>
+              <p class="chat-room" id="ib-c-not-qs" data-copy="CHAT_NOT_QS" hidden></p>
+              <p class="chat-as"><span id="ib-c-as"></span> <button class="expander" id="ib-c-as-go" type="button" aria-expanded="false" aria-controls="ib-c-as-box"></button></p>
+              <div class="ib-form" id="ib-c-as-box" hidden>
+                <label class="opts-label" for="ib-c-as-field" data-copy="INCLUDE_NAME_LABEL"></label>
+                <div class="linkbox">
+                  <input id="ib-c-as-field" type="text" autocomplete="off" spellcheck="false" />
+                  <button class="btn" id="ib-c-as-save" type="button" data-copy="READ_NAME_SAVE"></button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- The front page's inbox bar: an inbox kept on this device (open it, or forget it), or one open
+             in this tab, with how many messages are new (texts from inbox/inboxCopy.ts) -->
+        <section class="card kept-card" id="kept-card" aria-labelledby="kept-text" hidden>
+          <div class="kept-row">
+            <span class="ib-badge small" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13.5 6 6.6A2 2 0 0 1 7.9 5.3h8.2A2 2 0 0 1 18 6.6l2.5 6.9" /><path d="M3.5 13.5V18a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-4.5H16l-1.5 2.3h-5L8 13.5z" /></svg></span>
+            <p id="kept-text"></p>
+            <span class="stall-buttons">
+              <!-- Several kept here: those whose words are remembered, by name (filled by main.ts) -->
+              <span class="kept-named" id="kept-named"></span>
+              <button class="btn mini grad-btn" id="kept-open" type="button"></button>
+              <button class="btn mini ghost" id="kept-forget" type="button"></button>
+            </span>
+          </div>
+          <div class="confirm" id="kept-ask" hidden>
+            <p id="kept-ask-text"></p>
+            <span class="stall-buttons">
+              <button class="btn mini" id="kept-yes" type="button" data-copy="FORGET_YES"></button>
+              <button class="btn mini ghost" id="kept-no" type="button" data-copy="FORGET_NO"></button>
+            </span>
+          </div>
+        </section>
+
+        <section class="card" id="card">
+          <!-- Compose -->
+          <div class="view" id="v-compose">
+            <!-- A link someone sent, pasted in: only in a copy run from one's own
+                 computer (ui/localLinks.ts), whose window has no address bar. It opens here, without going near
+                 slynk.me's website or the browser's history. Not while writing to an inbox. -->
+            <form class="open-link" id="open-link" hidden novalidate>
+              <label class="opts-label" for="open-link-field">Received a Slynk link?</label>
+              <div class="linkbox">
+                <!-- Or scan its QR code: the camera, or a photo or screenshot of it (inbox/scan.ts) -->
+                <span class="field-wrap">
+                  <input id="open-link-field" type="text" placeholder="Paste it here" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" aria-describedby="open-link-error" />
+                  <button class="field-btn" id="open-link-scan" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3l2-3h6l2 3h3a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="3.6" /></svg></button>
+                </span>
+                <button class="btn grad-btn" id="open-link-go" type="submit">Open</button>
+              </div>
+              <p class="note pw-error" id="open-link-error" role="alert" hidden></p>
+            </form>
+            <!-- Writing to an anonymous inbox (texts from inbox/inboxCopy.ts) -->
+            <div class="to-inbox" id="to-inbox" hidden>
+              <div class="to-head">
+                <span class="ib-badge small" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13.5 6 6.6A2 2 0 0 1 7.9 5.3h8.2A2 2 0 0 1 18 6.6l2.5 6.9" /><path d="M3.5 13.5V18a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-4.5H16l-1.5 2.3h-5L8 13.5z" /></svg></span>
+                <span class="ib-meta"><span class="to-kind"><span class="opts-label" id="to-label" data-copy="TO_LABEL"></span><span class="to-mark" id="to-mark"></span><button class="to-what" id="to-qs" type="button" data-qs-why="sender" data-copy-label="QS_WHAT" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5.5M12 7.6v.2" /></svg></button></span><strong class="inbox-name" id="to-name" hidden></strong></span>
+              </div>
+              <!-- "Check it." opens the address check (inbox/check.ts), beside the line it's about -->
+              <p class="note to-check" id="to-check"><span id="to-check-text" data-copy="TO_CHECK"></span><span id="to-check-it"> <button class="soft-link" id="to-check-go" type="button" aria-haspopup="dialog" data-copy="TO_CHECK_IT"></button></span></p>
+              <p class="note" id="to-size"></p>
+              <!-- For owners who keep their inbox: name this one in their address book -->
+              <p class="to-links" id="to-links" hidden>
+                <button class="soft-link" id="to-save-open" type="button" aria-expanded="false" aria-controls="to-save" data-copy="TO_SAVE_OPEN"></button>
+              </p>
+              <div class="ib-form" id="to-save" hidden>
+                <label class="opts-label" for="to-save-field" data-copy="BOOK_SAVE_LABEL"></label>
+                <div class="linkbox">
+                  <input id="to-save-field" type="text" autocomplete="off" spellcheck="false" />
+                  <button class="btn" id="to-save-go" type="button" data-copy="BOOK_SAVE"></button>
+                </div>
+                <p class="note pw-error" id="to-save-error" role="alert" hidden></p>
+              </div>
+            </div>
+            <label class="sr-only" for="text" id="text-label">Message (optional)</label>
+            <textarea id="text" class="compose-text" rows="3" placeholder="Add a message if you like: a password, an address, a note…" spellcheck="false" autocomplete="off"></textarea>
+
+            <ul class="items" id="files" aria-label="Files to send" hidden></ul>
+            <label class="drop" id="drop" for="file">
+              <input type="file" id="file" class="sr-only" multiple />
+              <span class="drop-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5" /><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" /></svg>
+              </span>
+              <span class="drop-title"><span id="drop-lead">Drop files here</span>, or <span class="link-ish">browse</span></span>
+              <span class="drop-sub">Up to 200 files, <button class="soft-link" id="size-why-go" type="button" aria-haspopup="dialog">2 MB in total</button> after compression</span>
+            </label>
+            <!-- iPhones only, while the picker is still handing files over (PICK_WAIT in shrinkCopy.ts) -->
+            <p class="note pick-wait" id="pick-wait" role="status" hidden></p>
+
+            <div class="meter" id="meter">
+              <div class="meter-track"><span class="meter-fill" id="meter-fill"></span></div>
+              <div class="meter-info">
+                <span class="meter-text" id="meter-text">0 KB of 2 MB</span>
+                <span class="meter-eta" id="meter-eta"></span>
+                <button class="soft-link meter-why" id="meter-why" type="button" aria-haspopup="dialog" hidden>Why only 2 MB?</button>
+                <!-- While photos or videos are made smaller ("Working out the size…"): what's going on -->
+                <button class="soft-link meter-why" id="meter-working" type="button" aria-haspopup="dialog" hidden>What’s happening?</button>
+              </div>
+            </div>
+
+            <!-- Smaller copies of photos that don't fit (texts from shrinkCopy.ts) -->
+            <div class="fit" id="fit" role="status" hidden>
+              <p id="fit-text" tabindex="-1"></p>
+              <button class="btn mini" id="fit-go" type="button" hidden></button>
+            </div>
+
+            <!-- Files or a longer message to an inbox (INBOX_FILES in site.ts): the honest line -->
+            <p class="note upload-note" id="to-upload-honest" data-copy="TO_UPLOAD_HONEST" hidden></p>
+
+            <!-- One-time, expiring and password links (texts from burnCopy.ts and passwordCopy.ts) -->
+            <details class="link-opts" id="link-opts">
+              <summary><span id="opts-title"></span><span class="link-opts-now" id="opts-now"></span></summary>
+              <div class="link-opts-body">
+                <div class="opts-expiry">
+                  <span class="opts-label" id="expiry-label"></span>
+                  <div class="seg" id="expiry" role="radiogroup" aria-labelledby="expiry-label"></div>
+                </div>
+                <label class="setting">
+                  <span class="setting-text"><strong id="pw-label"></strong><span id="pw-help"></span></span>
+                  <input type="checkbox" class="switch" id="pw-on" autocomplete="off" />
+                </label>
+                <div class="pw-box" id="pw-box" hidden>
+                  <label class="sr-only" for="pw" id="pw-field-label"></label>
+                  <input id="pw" class="pw-input" type="text" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+                  <span class="pw-actions">
+                    <button class="btn small" id="pw-new" type="button"></button>
+                    <button class="btn small" id="pw-copy" type="button">Copy</button>
+                  </span>
+                </div>
+                <!-- Under the password: the one-time switch, or slynk.me's rule in its place -->
+                <label class="setting">
+                  <span class="setting-text"><strong id="one-time-label"></strong><span id="one-time-help"></span></span>
+                  <input type="checkbox" class="switch" id="one-time" autocomplete="off" />
+                </label>
+                <p class="opts-rule" id="one-time-rule" hidden>
+                  <span id="one-time-rule-text"></span>
+                  <button class="soft-link" id="one-time-why" type="button" aria-haspopup="dialog"></button>
+                </p>
+                <!-- The rest is in Settings: a faint link, under a faint rule -->
+                <p class="opts-more"><button class="soft-link" id="opts-settings" type="button" aria-haspopup="dialog"></button></p>
+              </div>
+            </details>
+
+            <!-- Writing to an inbox with one's own open: include it, so they can reply -->
+            <div class="include" id="include" hidden>
+              <label class="setting">
+                <span class="setting-text"><strong data-copy="INCLUDE_LABEL"></strong><span data-copy="INCLUDE_HELP"></span></span>
+                <input type="checkbox" class="switch" id="include-on" autocomplete="off" />
+              </label>
+              <div class="include-name" id="include-name-box" hidden>
+                <label class="opts-label" for="include-name" data-copy="INCLUDE_NAME_LABEL"></label>
+                <input id="include-name" class="include-name-input" type="text" autocomplete="off" spellcheck="false" />
+              </div>
+            </div>
+            <!-- Writing to an inbox without one's own open: how to get replies, set out like the switches above -->
+            <div class="include reply-hint" id="reply-hint" hidden>
+              <div class="setting">
+                <span class="setting-text"><strong data-copy="REPLY_HINT_LEAD"></strong><span id="reply-hint-have"><span data-copy="REPLY_HINT_HAVE"></span> <a class="soft-link" href="#/open-inbox" data-copy="REPLY_HINT_OPEN"></a></span></span>
+                <a class="btn small" id="reply-hint-go" href="#/new-inbox" data-copy="REPLY_HINT_GET"></a>
+              </div>
+            </div>
+            <button class="btn primary" id="send" type="button" disabled>
+              <span class="spinner" aria-hidden="true"></span>
+              <span id="send-label">Connecting to the mixnet…</span>
+            </button>
+            <div id="to-after" hidden>
+              <!-- A safety note for someone at risk, so it stays in sight, under a light rule; the rest folds -->
+              <p class="note to-safety" data-copy="TO_HONEST_TIMING"></p>
+              <details class="more-about">
+                <summary data-copy="MORE_ABOUT"></summary>
+                <p class="note" data-copy="TO_THEIRS"></p>
+                <p class="note" data-copy="TO_HONEST_IP"></p>
+                <!-- A message that goes as two pieces to a quantum-safe address -->
+                <p class="note" id="to-honest-qs" data-copy="TO_HONEST_QS" hidden></p>
+                <!-- The comparison, and why messages only (with files off, as on slynk.me) -->
+                <p class="note step-links"><button class="soft-link" id="to-compare" type="button" aria-haspopup="dialog" data-copy="PURPOSE_COMPARE"></button><span id="to-only" hidden> · <a data-copy="MESSAGES_ONLY_WHY" target="_blank" rel="noopener"></a></span></p>
+              </details>
+            </div>
+          </div>
+
+          <!-- Delivered to an inbox -->
+          <div class="view" id="v-delivered" hidden>
+            <span class="done-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 9.5 17 19 7.5" /></svg></span>
+            <h2 id="d-title"></h2>
+            <p class="muted" id="d-when"></p>
+            <p class="note" id="d-note" data-copy="DELIVERED_NOTE"></p>
+            <button class="btn ghost wide" id="d-again" type="button" data-copy="DELIVERED_AGAIN"></button>
+          </div>
+
+          <!-- Creating an inbox, one step at a time (texts from inbox/inboxCopy.ts) -->
+          <div class="view" id="v-new-inbox" hidden>
+            <button class="back-chip" type="button" data-home><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg><span data-copy="BACK_HOME"></span></button>
+            <div class="step" id="ni-purpose">
+              <h2 data-copy="PURPOSE_TITLE" tabindex="-1"></h2>
+              <p class="lead-p" data-copy="PURPOSE_FOR"></p>
+              <ul class="uses" id="ni-uses"></ul>
+              <p class="lead-p" data-copy="PURPOSE_REPLY"></p>
+              <p class="lead-p" data-copy="PURPOSE_YOURS"></p>
+              <button class="btn primary step-next" id="ni-to-label" type="button" data-copy="PURPOSE_NEXT"></button>
+              <!-- Less needed every time, folded under Next, so a phone shows less text and Next stays in reach: where messages wait, messages-only, the comparison and the About answer. Replies stay above, under the list -->
+              <details class="more-about">
+                <summary data-copy="MORE_ABOUT"></summary>
+                <p class="lead-p" data-copy="PURPOSE_HELD"></p>
+                <p class="lead-p" id="ni-only" hidden><span data-copy="MESSAGES_ONLY"></span> <a data-copy="MESSAGES_ONLY_WHY" target="_blank" rel="noopener"></a></p>
+                <p class="lead-p" data-copy="PURPOSE_LEAD"></p>
+                <p class="lead-p" data-copy="PURPOSE_BASE"></p>
+                <p class="lead-p" data-copy="PURPOSE_TRUST"></p>
+                <p class="note step-links"><button class="soft-link" id="ni-compare" type="button" aria-haspopup="dialog" data-copy="PURPOSE_COMPARE"></button> · <a href="/about/#inbox" target="_blank" rel="noopener" data-copy="PURPOSE_HOW"></a></p>
+              </details>
+            </div>
+
+            <div class="step" id="ni-label" hidden>
+              <h2 data-copy="LABEL_TITLE" tabindex="-1"></h2>
+              <p class="muted" data-copy="LABEL_LEAD"></p>
+              <label class="opts-label" for="ni-label-field" data-copy="LABEL_FIELD"></label>
+              <input id="ni-label-field" class="pw-input" type="text" autocomplete="off" spellcheck="false" aria-describedby="ni-label-note" />
+              <p class="note" id="ni-label-note" data-copy="LABEL_NOT_ADDRESS"></p>
+              <button class="btn primary step-next" id="ni-label-next" type="button" data-copy="LABEL_NEXT"></button>
+            </div>
+
+            <div class="step" id="ni-words" hidden>
+              <h2 data-copy="WORDS_TITLE" tabindex="-1"></h2>
+              <p class="note once" data-copy="WORDS_WARNING"></p>
+              <ol class="words" id="ni-word-list" aria-label="Your 12-word passphrase"></ol>
+              <p class="note" data-copy="WORDS_SAVE"></p>
+              <button class="btn small" id="ni-copy-words" type="button" data-copy="WORDS_COPY"></button>
+              <button class="btn primary step-next" id="ni-saved" type="button" data-copy="WORDS_NEXT"></button>
+            </div>
+
+            <div class="step" id="ni-check" hidden>
+              <h2 data-copy="CHECK_TITLE" tabindex="-1"></h2>
+              <p class="muted" id="ni-check-lead"></p>
+              <div class="check-words" id="ni-check-fields"></div>
+              <p class="note pw-error" id="ni-check-error" role="alert" hidden></p>
+              <!-- Side by side, so going back to the words is in sight on a phone (the top's Back once lost a tester's place) -->
+              <div class="check-actions step-next">
+                <button class="btn primary" id="ni-check-go" type="button" data-copy="CHECK_NEXT"></button>
+                <button class="btn ghost" id="ni-check-back" type="button" data-copy="CHECK_BACK"></button>
+              </div>
+            </div>
+
+            <div class="step" id="ni-ready" hidden>
+              <!-- The title beside the tick -->
+              <div class="ready-head">
+                <span class="done-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 9.5 17 19 7.5" /></svg></span>
+                <h2 data-copy="READY_TITLE" tabindex="-1"></h2>
+              </div>
+              <p class="ready-name"><strong class="inbox-name" id="ni-name-shown" hidden></strong></p>
+              <!-- Remember the words here: off unless switched on, after the warnings (inbox/kept.ts) -->
+              <label class="setting keep-setting" id="ni-remember-row">
+                <span class="setting-text"><strong data-copy="REMEMBER_LABEL"></strong><span data-copy="REMEMBER_HELP"></span></span>
+                <input type="checkbox" class="switch" id="ni-remember" autocomplete="off" aria-describedby="ni-remember-warn" />
+              </label>
+              <div class="remember-warn" id="ni-remember-warn" role="note" hidden>
+                <p class="remember-warn-title" data-copy="REMEMBER_WARN_TITLE"></p>
+                <ul class="remember-risks" data-risks></ul>
+                <p class="remember-more"><a href="/about/#inbox-remember" target="_blank" rel="noopener" data-copy="OPEN_KEEP_MORE"></a></p>
+              </div>
+              <!-- An optional password for the remembered words: with one, they're encrypted here, and the warnings above say what it changes; hidden as it's typed, with the eye to check it, and typed again -->
+              <div class="remember-pw" id="ni-remember-pw-box" hidden>
+                <label class="opts-label" for="ni-remember-pw" data-copy="REMEMBER_PW_LABEL"></label>
+                <span class="field-wrap">
+                  <input id="ni-remember-pw" class="pw-input" type="password" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" aria-describedby="ni-remember-pw-help" data-remember-pw="ni-remember-warn" />
+                  <button class="field-btn eye-btn" type="button" aria-pressed="false" aria-controls="ni-remember-pw" data-pw-eye>
+                    <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                    <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                  </button>
+                </span>
+                <!-- Typed again, to be sure: shown once a password is typed -->
+                <div class="remember-pw-again" id="ni-remember-pw2-box" hidden>
+                  <label class="opts-label" for="ni-remember-pw2" data-copy="REMEMBER_PW_AGAIN"></label>
+                  <span class="field-wrap">
+                    <input id="ni-remember-pw2" class="pw-input" type="password" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+                    <button class="field-btn eye-btn" type="button" aria-pressed="false" aria-controls="ni-remember-pw2" data-pw-eye>
+                      <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                      <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                    </button>
+                  </span>
+                </div>
+                <p class="note" id="ni-remember-pw-help" data-copy="REMEMBER_PW_HELP"></p>
+                <p class="note pw-error" id="ni-remember-pw-error" role="alert" hidden></p>
+              </div>
+              <!-- The way in, straight under remembering it, so it's never out of sight; the extras after it -->
+              <button class="btn primary step-next" id="ni-open" type="button" data-copy="READY_OPEN"></button>
+              <!-- Backing up, for unlocking elsewhere (inbox/keyFileBox.ts): only while it's not remembered here -->
+              <details class="link-opts keyfile" id="ni-kf">
+                <summary><span data-copy="KEYFILE_TITLE"></span><span class="link-opts-now" data-copy="KEYFILE_WHY"></span></summary>
+                <div class="link-opts-body">
+                  <p class="note" data-copy="KEYFILE_HELP"></p>
+                  <label class="opts-label" for="ni-kf-pw" data-copy="KEYFILE_PASSWORD"></label>
+                  <!-- Blank, hidden as it's typed, with the eye to check it, like the site's other password boxes -->
+                  <span class="field-wrap">
+                    <input id="ni-kf-pw" class="pw-input" type="password" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+                    <button class="field-btn eye-btn" type="button" aria-pressed="false" aria-controls="ni-kf-pw" data-pw-eye>
+                      <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                      <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                    </button>
+                  </span>
+                  <!-- Typed again, to be sure: shown once a password is typed -->
+                  <div class="kf-again" id="ni-kf-pw2-box" hidden>
+                    <label class="opts-label" for="ni-kf-pw2" data-copy="REMEMBER_PW_AGAIN"></label>
+                    <span class="field-wrap">
+                      <input id="ni-kf-pw2" class="pw-input" type="password" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+                      <button class="field-btn eye-btn" type="button" aria-pressed="false" aria-controls="ni-kf-pw2" data-pw-eye>
+                        <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                        <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                      </button>
+                    </span>
+                  </div>
+                  <p class="kf-actions">
+                    <button class="btn small" id="ni-kf-new" type="button"></button>
+                    <button class="btn small" id="ni-kf-save" type="button" data-copy="KEYFILE_SAVE"></button>
+                  </p>
+                  <p class="note pw-error" id="ni-kf-error" role="alert" hidden></p>
+                </div>
+              </details>
+              <!-- The link and QR code folded away -->
+              <details class="link-opts ready-share" id="ni-show">
+                <summary><span data-copy="READY_SHOW"></span></summary>
+                <div class="link-opts-body">
+                  <!-- Its two addresses, secure and quantum-safe, as tabs: the one left selected is where its Share opens -->
+                  <div class="addr-tabs-row">
+                    <div class="addr-tabs" id="ni-tabs" role="tablist" data-copy-label="TABS_LABEL">
+                      <button class="addr-tab" id="ni-tab-secure" type="button" role="tab" aria-selected="true" aria-controls="ni-share" data-qs="false"><span class="addr-tab-name" data-copy="TAB_SECURE"></span></button>
+                      <button class="addr-tab" id="ni-tab-qs" type="button" role="tab" aria-selected="false" aria-controls="ni-share" data-qs="true" tabindex="-1"><span class="addr-tab-name" data-copy="TAB_QS"></span></button>
+                    </div>
+                    <button class="icon-btn small addr-what" id="ni-tabs-what" type="button" data-qs-why="inbox" data-copy-label="TABS_WHAT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5.5M12 7.6v.2" /></svg></button>
+                  </div>
+                  <div class="addr-panel" id="ni-share" role="tabpanel" aria-labelledby="ni-tab-secure">
+                    <p class="muted" id="ni-share-lead"></p>
+                    <p class="qs-what" id="ni-qs-what" hidden><button class="soft-link" type="button" aria-haspopup="dialog" data-qs-why="ready" data-copy="QS_WHAT"></button></p>
+                    <div class="linkbox">
+                      <input id="ni-link" readonly aria-label="Your inbox's address" spellcheck="false" />
+                      <button class="btn grad-btn" id="ni-copy-link" type="button">Copy</button>
+                    </div>
+                    <div class="qr" id="ni-qr" role="img" aria-label="QR code of your inbox's address"></div>
+                    <button class="btn small center" id="ni-save-qr" type="button" data-copy="READY_SAVE_QR"></button>
+                  </div>
+                  <p class="note" data-copy="READY_WHERE"></p>
+                  <p class="note" data-copy="READY_AGAIN"></p>
+                </div>
+              </details>
+              <p class="note ready-later" data-copy="READY_KEEP"></p>
+            </div>
+          </div>
+
+          <!-- Opening an inbox (texts from inbox/inboxCopy.ts) -->
+          <div class="view" id="v-open-inbox" hidden>
+            <button class="back-chip" type="button" data-home><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg><span data-copy="BACK_HOME"></span></button>
+            <h2 data-copy="OPEN_TITLE" tabindex="-1"></h2>
+            <!-- Inboxes whose words this device remembers: straight in -->
+            <div class="remembered" id="oi-remembered" hidden>
+              <span class="opts-label" data-copy="OPEN_REMEMBERED_TITLE"></span>
+              <div class="remembered-list" id="oi-remembered-list"></div>
+            </div>
+            <!-- Not a form, and no sign-in fields, so browsers don't offer to save the passphrase (their
+                 prompts got in the way); a password box still, so keyboards don't learn the words -->
+            <div id="oi-form">
+            <div id="oi-by-words">
+              <label class="opts-label" for="oi-words" data-copy="OPEN_WORDS_LABEL"></label>
+              <div class="pw-box words-box">
+                <span class="field-wrap">
+                  <input id="oi-words" class="pw-input" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+                  <button class="field-btn eye-btn" id="oi-show" type="button" aria-pressed="false" aria-controls="oi-words">
+                    <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                    <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                  </button>
+                </span>
+              </div>
+            </div>
+            <details class="link-opts" id="oi-file-opts">
+              <summary><span data-copy="OPEN_USE_FILE"></span></summary>
+              <div class="link-opts-body">
+                <label class="opts-label" for="oi-file" data-copy="OPEN_FILE_LABEL"></label>
+                <input id="oi-file" class="file-pick" type="file" accept=".txt,text/plain" />
+                <!-- A backup with messages: restoring it keeps the inbox here -->
+                <p class="note" id="oi-file-messages" data-copy="OPEN_FILE_MESSAGES" hidden></p>
+                <label class="opts-label" for="oi-file-pw" data-copy="OPEN_FILE_PASSWORD"></label>
+                <input id="oi-file-pw" class="pw-input" type="text" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+              </div>
+            </details>
+            <label class="setting keep-setting" id="oi-keep-row">
+              <span class="setting-text"><strong data-copy="OPEN_KEEP"></strong><span><span data-copy="OPEN_KEEP_HELP"></span> <a href="/about/#inbox-keep" target="_blank" rel="noopener" data-copy="OPEN_KEEP_MORE"></a></span></span>
+              <input type="checkbox" class="switch" id="oi-keep" autocomplete="off" />
+            </label>
+            <label class="setting keep-setting" id="oi-remember-row">
+              <span class="setting-text"><strong data-copy="REMEMBER_LABEL"></strong><span data-copy="REMEMBER_HELP"></span></span>
+              <input type="checkbox" class="switch" id="oi-remember" autocomplete="off" aria-describedby="oi-remember-warn" />
+            </label>
+            <div class="remember-warn" id="oi-remember-warn" role="note" hidden>
+              <p class="remember-warn-title" data-copy="REMEMBER_WARN_TITLE"></p>
+              <ul class="remember-risks" data-risks></ul>
+              <p class="remember-more"><a href="/about/#inbox-remember" target="_blank" rel="noopener" data-copy="OPEN_KEEP_MORE"></a></p>
+            </div>
+            <!-- An optional password for the remembered words: with one, they're encrypted here, and the warnings above say what it changes; hidden as it's typed, with the eye to check it, and typed again -->
+            <div class="remember-pw" id="oi-remember-pw-box" hidden>
+              <label class="opts-label" for="oi-remember-pw" data-copy="REMEMBER_PW_LABEL"></label>
+              <span class="field-wrap">
+                <input id="oi-remember-pw" class="pw-input" type="password" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" aria-describedby="oi-remember-pw-help" data-remember-pw="oi-remember-warn" />
+                <button class="field-btn eye-btn" type="button" aria-pressed="false" aria-controls="oi-remember-pw" data-pw-eye>
+                  <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                  <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                </button>
+              </span>
+              <!-- Typed again, to be sure: shown once a password is typed -->
+              <div class="remember-pw-again" id="oi-remember-pw2-box" hidden>
+                <label class="opts-label" for="oi-remember-pw2" data-copy="REMEMBER_PW_AGAIN"></label>
+                <span class="field-wrap">
+                  <input id="oi-remember-pw2" class="pw-input" type="password" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+                  <button class="field-btn eye-btn" type="button" aria-pressed="false" aria-controls="oi-remember-pw2" data-pw-eye>
+                    <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                    <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                  </button>
+                </span>
+              </div>
+              <p class="note" id="oi-remember-pw-help" data-copy="REMEMBER_PW_HELP"></p>
+              <p class="note pw-error" id="oi-remember-pw-error" role="alert" hidden></p>
+            </div>
+            <p class="note pw-error" id="oi-error" role="alert" hidden></p>
+            <button class="btn primary step-next" id="oi-go" type="button" data-copy="OPEN_BUTTON"></button>
+            </div>
+            <details class="more-about">
+              <summary data-copy="MORE_ABOUT"></summary>
+              <p class="note" data-copy="OWNER_HONEST_IP"></p>
+            </details>
+          </div>
+
+          <!-- Progress (sending or receiving) -->
+          <div class="view" id="v-progress" hidden>
+            <div class="progress-top">
+              <span class="progress-kicker" id="p-kicker">Sending</span>
+              <span class="progress-pct" id="p-pct">0%</span>
+            </div>
+            <div class="bar" id="p-bar"><span class="bar-fill" id="p-fill"></span></div>
+            <!-- Stopping a send: Cancel at the end of the progress line, only while a link is being sent -->
+            <p class="progress-detail progress-line"><span id="p-detail" aria-live="polite">Starting…</span><span class="stop-send" id="p-stop-send" hidden><button class="link-btn" id="p-cancel" type="button">Cancel</button></span></p>
+            <div class="confirm" id="p-stop-ask" hidden>
+              <p><strong>Stop sending?</strong> <span id="p-stop-why">You won’t get a link, so nobody can open what’s gone so far.</span></p>
+              <span class="stall-buttons">
+                <button class="btn mini" id="p-stop-yes" type="button">Stop sending</button>
+                <button class="btn mini ghost" id="p-stop-no" type="button">Keep sending</button>
+              </span>
+            </div>
+            <div class="stall" id="p-stall" role="status" hidden>
+              <p id="p-stall-text"></p>
+              <span class="stall-buttons">
+                <button class="btn mini" id="p-wait" type="button">Keep waiting</button>
+                <button class="btn mini ghost" id="p-stop" type="button">Stop</button>
+              </span>
+            </div>
+            <!-- A send or collect of a megabyte or more (main.ts): keep the page open; the screen is kept on where the browser allows -->
+            <div class="keep-note" id="p-keep" hidden>
+              <span class="fit-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="6.5" y="2.5" width="11" height="19" rx="2.5" />
+                  <path d="M10.5 18.5h3" />
+                </svg>
+              </span>
+              <p id="p-keep-text"></p>
+            </div>
+            <div class="fact">
+              <span class="fact-label">While you wait</span>
+              <p class="fact-text" id="fact"></p>
+            </div>
+          </div>
+
+          <!-- Sent -->
+          <div class="view" id="v-sent" hidden>
+            <span class="done-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 9.5 17 19 7.5" /></svg></span>
+            <h2>Your link is ready</h2>
+            <p class="muted" id="sent-what"></p>
+            <!-- Slynk makes the link; the sender passes it on (someone once looked for where to "push" it) -->
+            <p class="sent-pass"><strong>Now pass it on to the person it’s for.</strong> Slynk doesn’t deliver it for you.</p>
+            <div class="linkbox">
+              <input id="link" readonly aria-label="Your Slynk link" spellcheck="false" />
+              <button class="btn grad-btn" id="copy-link" type="button">Copy</button>
+            </div>
+            <!-- Under the link: what kind of link it is, its QR code, the password, then (with an inbox here) "Copy it and go to my inbox" -->
+            <p class="note" id="sent-ordinary">
+              Anyone with this link<span id="sent-and-pw" hidden> and its password</span> can open it until
+              <strong id="sent-until"></strong> at the latest, and Slynk can’t take it back.
+            </p>
+            <div id="sent-burn" hidden></div>
+            <button class="btn ghost wide" id="show-qr" type="button" aria-expanded="false" aria-controls="qr-box">Show QR code</button>
+            <div class="qr-box" id="qr-box" hidden>
+              <div class="qr" id="qr" role="img" aria-label="QR code of your link"></div>
+              <p class="note">Use your phone’s built-in camera rather than a scanner app: whatever reads the code gets the link, and the link is the key.</p>
+              <!-- Saved only on request, as a PNG a phone's photo viewer shows (inbox/qr.ts qrPngFile): to show or print it later, in person -->
+              <button class="btn small center" id="save-qr" type="button">Save QR code</button>
+              <p class="note">A saved code is the link itself: anyone who sees the picture can open it, and phones may copy pictures to the cloud. Delete it once it’s done its job.</p>
+            </div>
+            <div class="sent-pw" id="sent-pw" hidden>
+              <span class="opts-label" id="sent-pw-label"></span>
+              <div class="pw-show-row">
+                <span class="pw-show" id="sent-pw-value" aria-labelledby="sent-pw-label"></span>
+                <button class="btn" id="copy-pw" type="button">Copy</button>
+              </div>
+              <p class="note once" id="sent-pw-note"></p>
+            </div>
+            <!-- With an inbox open or kept here: copy the link and go to the inbox, to send it to someone from there; no message is started -->
+            <button class="btn ghost wide sent-to-inbox" id="sent-to-inbox" type="button" data-copy="SENT_TO_INBOX" hidden></button>
+            <p class="note">
+              Many email and chat services can read the links sent through them. For anything very sensitive, share it in
+              person or through an encrypted app you trust.
+            </p>
+            <div id="cancel" hidden>
+              <button class="btn ghost wide" id="cancel-link" type="button"></button>
+              <div class="confirm" id="cancel-ask" hidden>
+                <p id="cancel-q"></p>
+                <span class="stall-buttons">
+                  <button class="btn mini" id="cancel-yes" type="button"></button>
+                  <button class="btn mini ghost" id="cancel-no" type="button"></button>
+                </span>
+              </div>
+              <p class="note" id="cancel-help"></p>
+            </div>
+            <p class="note cancel-result" id="cancel-result" role="status" tabindex="-1" hidden></p>
+            <button class="btn ghost wide" id="send-another" type="button">Send something else</button>
+          </div>
+
+          <!-- Incoming (waiting to collect) -->
+          <div class="view" id="v-incoming" hidden>
+            <span class="incoming-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9 6 9-6" /><rect x="3" y="5" width="18" height="14" rx="2" /></svg>
+            </span>
+            <h2>Something’s waiting for you</h2>
+            <p class="muted" id="in-meta"></p>
+            <p class="note once" id="in-once" hidden></p>
+            <p class="note" id="in-until" hidden></p>
+            <div class="in-pw" id="in-pw" hidden>
+              <p class="note once" id="in-pw-note"></p>
+              <label class="opts-label" for="in-pw-field" id="in-pw-label"></label>
+              <!-- Hidden as it's typed, like the inbox's words, with the eye inside the box's right edge to check it -->
+              <span class="field-wrap">
+                <input id="in-pw-field" class="pw-input" type="password" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+                <button class="field-btn eye-btn" id="in-pw-show" type="button" aria-pressed="false" aria-controls="in-pw-field">
+                <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                </button>
+              </span>
+              <p class="note pw-error" id="in-pw-error" role="alert" hidden></p>
+            </div>
+            <button class="btn primary collect" id="collect" type="button"></button>
+            <p class="progress-detail" id="in-status" tabindex="-1" aria-live="polite" hidden></p>
+          </div>
+
+          <!-- Received -->
+          <div class="view" id="v-received" hidden>
+            <span class="done-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 9.5 17 19 7.5" /></svg></span>
+            <h2 id="r-title">It’s here</h2>
+            <div id="r-file" hidden>
+              <div class="chosen">
+                <span class="file-icon" id="r-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" /></svg>
+                  <button class="thumb" id="r-thumb" type="button" hidden><canvas></canvas><svg class="thumb-zoom" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5" /><path d="m14.6 14.6 4.4 4.4" /></svg></button>
+                </span>
+                <span class="chosen-meta" id="r-meta"><strong id="r-name"></strong><span id="r-size"></span><span id="r-stripped" hidden>Hidden details were removed</span></span>
+              </div>
+              <!-- What the file checks found, each line with an ⓘ that opens why (ui/fileWarn.ts) -->
+              <span class="file-warns" id="r-warns" hidden></span>
+              <div class="save-row">
+                <button class="btn primary" id="save" type="button">Save file</button>
+                <!-- To another app, through the device's share sheet, where the browser can (ui/share.ts) -->
+                <button class="btn share-btn" id="share" type="button" hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="M7.5 7.5 12 3l4.5 4.5" /><path d="M8.5 10H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-2.5" /></svg>
+                </button>
+              </div>
+            </div>
+            <div id="r-text" hidden>
+              <div class="secret" id="secret" data-hidden="true">
+                <pre id="secret-text"></pre>
+                <button class="reveal" id="reveal" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                  Click to reveal
+                </button>
+              </div>
+              <div class="row">
+                <button class="btn grad-btn" id="copy-secret" type="button">Copy</button>
+                <button class="btn" id="hide-secret" type="button">Hide</button>
+              </div>
+            </div>
+            <div id="r-list" hidden>
+              <ul class="items" id="r-items" aria-label="What arrived"></ul>
+              <div class="save-row">
+                <button class="btn primary" id="save-all" type="button" hidden>Save all (.zip)</button>
+                <button class="btn share-btn" id="share-all" type="button" hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="M7.5 7.5 12 3l4.5 4.5" /><path d="M8.5 10H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-2.5" /></svg>
+                </button>
+              </div>
+              <p class="note" id="zip-note" hidden></p>
+            </div>
+            <p class="note once" id="r-once" hidden></p>
+            <p class="note">Only in this tab’s memory. Close it and it’s&nbsp;gone.</p>
+            <div class="row">
+              <button class="btn ghost" id="forget" type="button">Forget it now</button>
+              <button class="btn ghost" id="new-send" type="button">Send something</button>
+            </div>
+          </div>
+
+          <!-- Failed -->
+          <div class="view" id="v-failed" hidden>
+            <span class="fail-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 7v6M12 16.5v.5" /><circle cx="12" cy="12" r="9" /></svg></span>
+            <h2 id="f-title">That didn’t work</h2>
+            <p class="muted" id="f-msg"></p>
+            <div class="row">
+              <button class="btn grad-btn" id="f-retry" type="button">Try again</button>
+              <button class="btn ghost" id="f-home" type="button">Start over</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Writing to an inbox: a link is for someone else, never the inbox's owner (texts from inbox/inboxCopy.ts) -->
+        <p class="to-elsewhere" id="to-elsewhere" hidden><span id="to-elsewhere-text"></span> <button class="soft-link" id="to-clear" type="button" data-copy="TO_MAKE_LINK"></button></p>
+
+        <section class="how" id="how" aria-label="How Slynk works">
+          <div class="how-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+            <h3>Encrypted in your browser</h3>
+            <p>Everything is encrypted before it leaves this tab. The key travels only inside the link.</p>
+          </div>
+          <div class="how-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h3.5L15 17h6M3 17h3.5l2.6-3M14.4 9.8 17 7h4M18.5 4.5 21 7l-2.5 2.5M18.5 14.5 21 17l-2.5 2.5" /></svg>
+            <h3>Mixed by the xx network</h3>
+            <p>What you send travels in small pieces, mixed in with everyone else’s. This is designed to make it hard to tell who sent what to whom, and works better the more people use it.</p>
+          </div>
+          <div class="how-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18" /><path d="M10.6 5.6A9 9 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3.1 3.9M6.4 6.4C3.9 8.1 2.5 12 2.5 12S6 18.5 12 18.5a9 9 0 0 0 4.2-1" /></svg>
+            <h3>Slynk never sees what you send</h3>
+            <p>No accounts or cookies. What you send goes from your browser straight into the mixnet, never to Slynk. Close the tab and the one-time identity it used is gone.</p>
+          </div>
+        </section>
+
+        <!-- The way into an anonymous inbox (texts from inbox/inboxCopy.ts): on the plain front page, while no inbox is open or kept here -->
+        <section class="card inbox-entry" id="inbox-entry" aria-labelledby="inbox-entry-title" hidden>
+          <h2 class="inbox-entry-title" id="inbox-entry-title" data-copy="ENTRY_TITLE"></h2>
+          <p class="inbox-entry-lead" data-copy="ENTRY_LEAD"></p>
+          <p class="inbox-entry-lead" data-copy="ENTRY_FOR"></p>
+          <div class="entry-tiles">
+            <a class="entry-tile" id="entry-create" href="#/new-inbox">
+              <span class="entry-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13.5 6 6.6A2 2 0 0 1 7.9 5.3H12M20.5 13.5l-1-2.8" /><path d="M3.5 13.5V18a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-4.5H16l-1.5 2.3h-5L8 13.5z" /><path d="M18 2.8v6M15 5.8h6" /></svg>
+              </span>
+              <span class="entry-text"><strong data-copy="ENTRY_CREATE"></strong><span data-copy="ENTRY_CREATE_SUB"></span></span>
+            </a>
+            <a class="entry-tile" id="entry-open" href="#/open-inbox">
+              <span class="entry-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15.5" r="4" /><path d="m10.9 12.6 8.6-8.6M16.4 7.1l2.6 2.6M14.2 9.3l2 2" /></svg>
+              </span>
+              <span class="entry-text"><strong data-copy="ENTRY_OPEN"></strong><span data-copy="ENTRY_OPEN_SUB"></span></span>
+            </a>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span class="footer-lead"><a class="no-ext" href="/about/" target="_blank" rel="noopener">About / how private is it?</a><span class="footer-new-tab">(opens in new tab)</span></span>
+        <span class="footer-inbox" id="footer-inbox"><a class="soft-link" href="/#/new-inbox" id="footer-create" data-copy="FOOTER_CREATE"></a><span id="footer-sep"> · </span><a class="soft-link" href="/#/open-inbox" id="footer-open" data-copy="FOOTER_OPEN"></a></span>
+        <span>Slynk · built on the <a href="https://xx.network" target="_blank" rel="noopener noreferrer">xx network</a></span>
+        <span>Open source · BSD 2-Clause</span>
+        <!-- release -->
+        <span class="on-web"><button class="soft-link" id="local-why-go" type="button" aria-haspopup="dialog">Run locally (download)</button></span>
+        <!-- /release -->
+        <span>Build <span id="build"></span></span>
+      </footer>
+    </div>
+
+    <dialog id="settings" class="sheet" aria-labelledby="settings-title">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="settings-title" tabindex="-1" autofocus>Settings</h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <p class="sheet-note">These apply to this tab only, unless you ask Slynk to remember them.</p>
+
+        <h3 class="setting-group">Files and photos</h3>
+        <!-- Three choices under a title that fits a phone's line, what each does on a card behind its ⓘ -->
+        <div class="setting stacked">
+          <div class="setting-head">
+            <strong id="s-shrink-title">Shrink photos, media &amp; docs</strong>
+            <button class="info-btn" id="s-shrink-info" type="button" aria-expanded="false" aria-controls="s-shrink-about" aria-label="What these choices do">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="M12 11v5.5M12 7.6v.2" /></svg>
+            </button>
+          </div>
+          <div class="info-card" id="s-shrink-about" hidden>
+            <p id="s-shrink-smallest"><b>Smallest:</b> whatever their size, to send faster, at a lower quality.</p>
+            <p id="s-shrink-fit"><b>To fit:</b> only when it’s all over 2 MB.</p>
+            <p id="s-shrink-ask"><b>Ask first:</b> only when you say.</p>
+            <p>Smaller photos and media files hold no hidden details.</p>
+          </div>
+          <div class="seg" id="s-shrink" role="radiogroup" aria-labelledby="s-shrink-title">
+            <label><input type="radio" name="shrink" value="smallest" aria-describedby="s-shrink-smallest" /><span>Smallest</span></label>
+            <label><input type="radio" name="shrink" value="fit" aria-describedby="s-shrink-fit" /><span>To fit</span></label>
+            <label><input type="radio" name="shrink" value="ask" aria-describedby="s-shrink-ask" /><span>Ask first</span></label>
+          </div>
+        </div>
+        <label class="setting">
+          <span class="setting-text"><strong>Remove hidden details from files</strong><span>From most photos, videos and documents, like where one was taken, the camera model or an author.</span></span>
+          <input type="checkbox" class="switch" id="s-strip" />
+        </label>
+        <label class="setting">
+          <span class="setting-text"><strong>Show photo, media and document previews</strong><span>Small pictures of the photos, media and most documents you send or receive. Tap one to see it up close or play it.</span></span>
+          <input type="checkbox" class="switch" id="s-previews" />
+        </label>
+        <label class="setting">
+          <span class="setting-text"><strong>Plain file names</strong><span>Sends names cameras and apps make, like IMG_20261017_142233.jpg, as photo.jpg.</span></span>
+          <input type="checkbox" class="switch" id="s-plain" />
+        </label>
+        <label class="setting">
+          <span class="setting-text"><strong>Save received files automatically</strong><span>Otherwise they wait for Save, as files with a warning always do. Two or more go in one .zip.</span></span>
+          <input type="checkbox" class="switch" id="s-autosave" />
+        </label>
+
+        <h3 class="setting-group">Connection</h3>
+        <label class="setting">
+          <span class="setting-text"><strong>Connect when the page opens</strong><span>Joins the mixnet at once, not when you start.</span><span class="setting-count" id="s-connect-note" role="status" hidden></span></span>
+          <input type="checkbox" class="switch" id="s-connect" />
+        </label>
+
+        <h3 class="setting-group">Extra privacy</h3>
+        <label class="setting">
+          <span class="setting-text"><strong>Cover messages</strong><span>Blank messages through the mixnet now and then, so it’s harder to tell when you really send. A little more data and battery.</span><span class="setting-count" id="s-cover-count" hidden></span></span>
+          <input type="checkbox" class="switch" id="s-cover" />
+        </label>
+        <label class="setting">
+          <span class="setting-text"><strong>Cover requests</strong><span>Empty requests to slynk.me’s key server that look like real ones, so nobody watching can tell which visitors sent or opened a link.</span></span>
+          <input type="checkbox" class="switch" id="s-kcover" />
+        </label>
+        <label class="setting">
+          <span class="setting-text"><strong>Uneven uploads</strong><span>Sends in uneven bursts, not a steady stream. Uploads take nearly twice as long.</span></span>
+          <input type="checkbox" class="switch" id="s-varied" />
+        </label>
+
+        <h3 class="setting-group">This browser</h3>
+        <div class="setting">
+          <span class="setting-text"><strong>Appearance</strong></span>
+          <div class="seg" role="radiogroup" aria-label="Appearance">
+            <label><input type="radio" name="theme" value="system" /><span>System</span></label>
+            <label><input type="radio" name="theme" value="dark" /><span>Dark</span></label>
+            <label><input type="radio" name="theme" value="light" /><span>Light</span></label>
+          </div>
+        </div>
+        <label class="setting">
+          <span class="setting-text"><strong>Tab notifications</strong><span>A dot on this tab when a transfer finishes or a message reaches your open inbox, while you’re elsewhere.</span></span>
+          <input type="checkbox" class="switch" id="s-notify" />
+        </label>
+        <label class="setting">
+          <span class="setting-text"><strong>Remember these settings</strong><span>Keeps your choices in this browser, never anything you send or receive.</span></span>
+          <input type="checkbox" class="switch" id="s-remember" />
+        </label>
+
+        <details class="advanced">
+          <summary>Advanced</summary>
+          <!-- What "Smallest" makes photos and videos, each choice on a card behind its ⓘ, as above -->
+          <div class="setting stacked">
+            <div class="setting-head">
+              <strong id="s-photo-level-title">Smallest photos</strong>
+              <button class="info-btn" id="s-photo-level-info" type="button" aria-expanded="false" aria-controls="s-photo-level-about" aria-label="What these choices do">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="M12 11v5.5M12 7.6v.2" /></svg>
+              </button>
+            </div>
+            <div class="info-card" id="s-photo-level-about" hidden>
+              <p id="s-photo-least"><b>Least:</b> 1,280 pixels on the long side, at a low quality. About 90 KB.</p>
+              <p id="s-photo-medium"><b>Medium:</b> 1,280 pixels, at a better quality. About 150 KB.</p>
+              <p id="s-photo-good"><b>Good:</b> up to 2,048 pixels, at a good quality, so text in screenshots stays sharper. About 500 KB.</p>
+              <p>What “Smallest” makes them, never smaller: if they don’t all fit, Slynk says so.</p>
+            </div>
+            <div class="seg" id="s-photo-level" role="radiogroup" aria-labelledby="s-photo-level-title">
+              <label><input type="radio" name="photo-level" value="least" aria-describedby="s-photo-least" /><span>Least</span></label>
+              <label><input type="radio" name="photo-level" value="medium" aria-describedby="s-photo-medium" /><span>Medium</span></label>
+              <label><input type="radio" name="photo-level" value="good" aria-describedby="s-photo-good" /><span>Good</span></label>
+            </div>
+          </div>
+          <div class="setting stacked">
+            <div class="setting-head">
+              <strong id="s-video-level-title">Smallest videos</strong>
+              <button class="info-btn" id="s-video-level-info" type="button" aria-expanded="false" aria-controls="s-video-level-about" aria-label="What these choices do">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="M12 11v5.5M12 7.6v.2" /></svg>
+              </button>
+            </div>
+            <div class="info-card" id="s-video-level-about" hidden>
+              <p id="s-video-180"><b>180p:</b> up to 15 frames a second. About 0.5 MB a minute.</p>
+              <p id="s-video-240"><b>240p:</b> up to 30 frames a second. About 1.4 MB a minute.</p>
+              <p id="s-video-360"><b>360p:</b> up to 30 frames a second. About 2.7 MB a minute, so about 45 seconds fit.</p>
+              <p>What “Smallest” makes them. If they don’t all fit, they’re made at 15 frames a second, then a size smaller, until they do. Too long even at 180p, Slynk says so.</p>
+            </div>
+            <div class="seg" id="s-video-level" role="radiogroup" aria-labelledby="s-video-level-title">
+              <label><input type="radio" name="video-level" value="180" aria-describedby="s-video-180" /><span>180p</span></label>
+              <label><input type="radio" name="video-level" value="240" aria-describedby="s-video-240" /><span>240p</span></label>
+              <label><input type="radio" name="video-level" value="360" aria-describedby="s-video-360" /><span>360p</span></label>
+            </div>
+          </div>
+          <label class="setting">
+            <span class="setting-text"><strong>Stronger compression</strong><span>Sends text, code and other uncompressed files about a sixth smaller, using Brotli. Big files take a while; send sooner and they go as usual.</span></span>
+            <input type="checkbox" class="switch" id="s-brotli" />
+          </label>
+          <div class="setting">
+            <span class="setting-text"><strong>Connection</strong><span id="s-conn">Not connected yet.</span><span id="s-restart-note" hidden>Restart tries again with a new identity. Anything waiting to go is sent once it has joined.</span></span>
+            <button class="btn small" id="s-restart" type="button" hidden>Restart</button>
+          </div>
+          <label class="setting">
+            <span class="setting-text"><strong>Detailed mixnet logs</strong><span>Writes the xx client’s logs to the browser console.</span></span>
+            <input type="checkbox" class="switch" id="s-verbose" />
+          </label>
+          <div class="setting">
+            <span class="setting-text"><strong>Gateway check</strong><span>Tests whether this browser can reach a sample of mixnet gateways.</span></span>
+            <button class="btn small" id="s-check" type="button">Run</button>
+          </div>
+          <pre class="check-out" id="s-check-out" hidden></pre>
+        </details>
+
+        <div class="sheet-foot">
+          <button class="btn grad-btn wide" type="button" data-close>Done</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- A photo, video, audio file or document as it will be sent, or one that arrived ("Show photo, media and document previews", ui/photoView.ts) -->
+    <dialog id="photo-view" class="viewer" aria-labelledby="pv-title">
+      <div class="viewer-head">
+        <div class="viewer-meta">
+          <h2 id="pv-title" tabindex="-1"></h2>
+          <span id="pv-about"></span>
+        </div>
+        <button class="btn mini" id="pv-zoom" type="button"></button>
+        <!-- A received photo: saves it, as its Save button does -->
+        <button class="icon-btn" id="pv-share" type="button" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="M7.5 7.5 12 3l4.5 4.5" /><path d="M8.5 10H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-2.5" /></svg>
+        </button>
+        <button class="icon-btn" id="pv-save" type="button" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11" /><path d="M7.5 10.5 12 15l4.5-4.5" /><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></svg>
+        </button>
+        <button class="icon-btn" type="button" data-close aria-label="Close preview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+      <div class="viewer-stage">
+        <div class="viewer-body" id="pv-body"><canvas id="pv-canvas"></canvas><div class="video-view" id="pv-video-box" hidden><div class="video-stage" id="pv-stage"><video id="pv-video" playsinline preload="metadata"></video><button class="video-big" id="pv-vbig" type="button" tabindex="-1" aria-hidden="true"><svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" /></svg></button></div><div class="video-bar"><button class="icon-btn video-btn" id="pv-vplay" type="button"><svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" /></svg><svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.2" /><rect x="13.5" y="5" width="4" height="14" rx="1.2" /></svg></button><div class="video-track" id="pv-vtrack" role="slider" tabindex="0" aria-valuemin="0"><div class="video-fill" id="pv-vfill"></div></div><span class="video-time" id="pv-vtime"></span><button class="icon-btn video-btn" id="pv-vfull" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg></button></div></div><div class="audio-view" id="pv-audio-box" hidden><canvas id="pv-wave"></canvas><audio id="pv-audio" controls preload="metadata"></audio></div><div class="doc-view" id="pv-doc" hidden></div></div>
+        <!-- A PDF's page buttons on the page's sides, halfway down (seen on an iPhone, 2026-10-24): along
+             the bottom, a first tap only brought back the browser's toolbar. "Page 2 of 5" is under the name. -->
+        <button class="icon-btn pv-turn pv-prev" id="pv-prev" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg></button>
+        <button class="icon-btn pv-turn pv-next" id="pv-next" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg></button>
+        <span class="sr-only" id="pv-page" aria-live="polite"></span>
+      </div>
+    </dialog>
+
+    <!-- A file in the composer's list (cloned by main.ts) -->
+    <template id="tpl-file">
+      <li class="item">
+        <span class="file-icon sm" data-part="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" /></svg>
+          <!-- "Show photo, media and document previews": the photo, video, audio or document as it will be sent, which opens it big -->
+          <button class="thumb" type="button" data-part="thumb" hidden><canvas></canvas><svg class="thumb-zoom" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5" /><path d="m14.6 14.6 4.4 4.4" /></svg></button>
+        </span>
+        <span class="item-meta" data-part="meta"><strong data-part="name"></strong><span data-part="size"></span></span>
+        <button class="icon-btn small" type="button" data-part="remove">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+        <div class="item-more" data-part="more" hidden>
+          <span class="item-note" data-part="copy" tabindex="-1" hidden></span>
+          <!-- Under the copy's size, which it undoes -->
+          <label class="opt" data-part="full" hidden><input type="checkbox" /> <span></span></label>
+          <div class="cleaned" data-part="cleaned" hidden>
+            <button class="chip" type="button" data-part="chip" aria-expanded="false">
+              <!-- No spaces between the parts: screen readers would read "Cleaned : see…". -->
+              <span data-part="chip-text"></span><svg class="chip-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="M12 11v5.5M12 7.6v.2" /></svg><span class="sr-only" data-part="chip-hint"></span>
+            </button>
+            <div class="pop" data-part="pop" role="group" hidden>
+              <div class="pop-head">
+                <p class="pop-title" data-part="pop-title"></p>
+                <!-- Opens Settings at "Remove hidden details from files"; not for a smaller copy, which can't hold any -->
+                <button class="soft-link" type="button" data-part="pop-set" hidden></button>
+              </div>
+              <ul class="pop-list" data-part="pop-list" role="list"></ul>
+              <p class="pop-note" data-part="pop-copy" hidden></p>
+              <label class="opt" data-part="original" hidden><input type="checkbox" /> Send original instead</label>
+            </div>
+          </div>
+          <span class="item-note" data-part="note" hidden></span>
+          <div class="item-ask" data-part="ask" hidden>
+            <span>Couldn’t clean the hidden data from this file. Send it as it is?</span>
+            <span class="item-ask-buttons">
+              <button class="btn mini" type="button" data-part="as-is">Yes, send it</button>
+              <button class="btn mini ghost" type="button" data-part="drop">No, remove it</button>
+            </span>
+          </div>
+        </div>
+      </li>
+    </template>
+
+    <!-- What arrived, when there are several items (cloned by main.ts) -->
+    <template id="tpl-got-file">
+      <li class="item">
+        <span class="file-icon sm" data-part="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" /></svg>
+          <!-- "Show photo, media and document previews": a received photo, video, audio or document, which opens big with a Save button -->
+          <button class="thumb" type="button" data-part="thumb" hidden><canvas></canvas><svg class="thumb-zoom" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5" /><path d="m14.6 14.6 4.4 4.4" /></svg></button>
+        </span>
+        <span class="item-meta" data-part="meta"><strong data-part="name"></strong><span data-part="size"></span><span data-part="stripped" hidden>Hidden details were removed</span></span>
+        <span class="item-actions">
+          <button class="icon-btn small share-mini" type="button" data-part="share" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="M7.5 7.5 12 3l4.5 4.5" /><path d="M8.5 10H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-2.5" /></svg>
+          </button>
+          <button class="btn mini" type="button" data-part="save">Save</button>
+        </span>
+        <!-- What the file checks found, each line with an ⓘ that opens why (ui/fileWarn.ts) -->
+        <div class="item-more" data-part="more" hidden><span class="file-warns" data-part="warns" hidden></span></div>
+      </li>
+    </template>
+    <template id="tpl-got-text">
+      <li class="item msg">
+        <div class="secret" data-part="secret" data-hidden="true">
+          <pre data-part="text"></pre>
+          <button class="reveal" type="button" data-part="reveal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" /><circle cx="12" cy="12" r="3" /></svg>
+            Click to reveal
+          </button>
+        </div>
+        <div class="row">
+          <button class="btn grad-btn" type="button" data-part="copy">Copy</button>
+          <button class="btn" type="button" data-part="hide">Hide</button>
+        </div>
+      </li>
+    </template>
+
+    <!-- A row in an unlocked inbox's list (cloned by inbox/owner.ts): no preview of the text. A one-way
+         message opens under its head, in the same box (#ib-open); while selecting, the tick shows. -->
+    <template id="tpl-mail-row">
+      <li class="mail-item">
+        <div class="mail-head">
+          <button class="mail-row" type="button">
+            <span class="mail-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12.5l4 4L18 8" /></svg></span>
+            <span class="avatar" data-part="avatar" aria-hidden="true"></span>
+            <span class="mail-main">
+              <span class="mail-top"><span class="sr-only" data-part="unread"></span><strong class="mail-from" data-part="from"></strong><span class="mail-flag" data-part="flag" hidden></span><span class="mail-when" data-part="when"></span></span>
+              <span class="mail-meta"><span class="mail-kind" data-part="kind"></span><span class="mail-title" data-part="title"></span><span data-part="size"></span></span>
+            </span>
+          </button>
+          <!-- How it came or went: beside the button, as a button can't hold another; drawn over the row's second line -->
+          <span class="mail-mark" data-part="mark"></span>
+        </div>
+      </li>
+    </template>
+
+    <!-- An upload, opened in an unlocked inbox: files or a longer message (cloned by inbox/owner.ts) -->
+    <template id="tpl-inbox-drop">
+      <div class="drop-row">
+        <div class="drop-head">
+          <span class="file-icon sm" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" /></svg>
+          </span>
+          <span class="item-meta"><strong data-part="label"></strong><span data-part="size"></span></span>
+          <button class="btn mini" type="button" data-part="collect"></button>
+        </div>
+        <p class="item-note drop-status" data-part="status" tabindex="-1" hidden></p>
+        <p class="item-note drop-status" data-part="kept-note" hidden></p>
+        <div class="stall" data-part="stall" role="status" hidden>
+          <p data-part="stall-text"></p>
+          <span class="stall-buttons">
+            <button class="btn mini" type="button" data-part="wait"></button>
+            <button class="btn mini ghost" type="button" data-part="stop"></button>
+          </span>
+        </div>
+        <ul class="items" data-part="items" aria-label="What arrived" hidden></ul>
+        <div class="row" data-part="after" hidden>
+          <button class="btn grad-btn" type="button" data-part="save-all" hidden></button>
+          <button class="btn share-btn" type="button" data-part="share-all" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="M7.5 7.5 12 3l4.5 4.5" /><path d="M8.5 10H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-2.5" /></svg>
+          </button>
+          <button class="btn" type="button" data-part="forget"></button>
+        </div>
+        <p class="note" data-part="zip-note" hidden></p>
+      </div>
+    </template>
+
+    <!-- "How is this different from a messaging app?" (texts from inbox/inboxCopy.ts) -->
+    <dialog id="compare" class="sheet" aria-labelledby="compare-title">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="compare-title" tabindex="-1" autofocus data-copy="COMPARE_TITLE"></h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <div class="compare" id="compare-rows"></div>
+        <p class="sheet-note"><a href="/about/#inbox" target="_blank" rel="noopener" data-copy="COMPARE_MORE"></a></p>
+        <div class="sheet-foot">
+          <button class="btn grad-btn wide" type="button" data-close data-copy="COMPARE_CLOSE"></button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- "Why can't I reply?", from a message that came without an inbox to reply to (texts from inbox/inboxCopy.ts) -->
+    <dialog id="why-reply" class="sheet" aria-labelledby="why-reply-title">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="why-reply-title" tabindex="-1" autofocus data-copy="WHY_REPLY"></h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <p data-copy="WHY_REPLY_WHY"></p>
+        <p data-copy="WHY_REPLY_HOW"></p>
+        <p class="sheet-note"><a href="/about/#inbox-reply" target="_blank" rel="noopener" data-copy="COMPARE_MORE"></a></p>
+        <div class="sheet-foot">
+          <button class="btn grad-btn wide" type="button" data-close data-copy="COMPARE_CLOSE"></button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- What a quantum-safe inbox is, from the ready screen, the (i) beside the two addresses' tabs, a marker's note and a sender's card (inbox/qsWhy.ts, texts from inbox/inboxCopy.ts) -->
+    <dialog id="qs-why" class="sheet" aria-labelledby="qs-why-title">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="qs-why-title" tabindex="-1" autofocus></h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <div class="qs-why-body" id="qs-why-body"></div>
+        <p class="sheet-note"><a href="/about/#inbox-quantum" target="_blank" rel="noopener" data-copy="COMPARE_MORE"></a></p>
+        <div class="sheet-foot">
+          <button class="btn grad-btn wide" type="button" data-close data-copy="COMPARE_CLOSE"></button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- "Check its address is correct", from under the composer's Send (inbox/check.ts, texts from inbox/inboxCopy.ts) -->
+    <dialog id="addr-check" class="sheet" aria-labelledby="addr-check-title">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="addr-check-title" tabindex="-1" autofocus data-copy="ADDR_CHECK_TITLE"></h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <p id="addr-check-lead" data-copy="ADDR_CHECK_LEAD"></p>
+        <div class="linkbox">
+          <span class="field-wrap">
+            <input id="addr-check-field" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" data-copy-label="ADDR_CHECK_FIELD" aria-describedby="addr-check-lead" />
+            <button class="field-btn" id="addr-check-scan" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3l2-3h6l2 3h3a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="3.6" /></svg></button>
+          </span>
+          <button class="btn" id="addr-check-go" type="button" data-copy="ADDR_CHECK_GO"></button>
+        </div>
+        <p class="check-result" id="addr-check-result" role="status" hidden></p>
+        <!-- The full address, only if asked for, with Copy: small and grey, at the bottom -->
+        <p class="check-full-line"><button class="expander" id="addr-check-full-go" type="button" aria-expanded="false" aria-controls="addr-check-full" data-copy="TO_SHOW_ADDRESS"></button></p>
+        <div class="check-full" id="addr-check-full" hidden>
+          <code class="to-address" id="addr-check-text"></code>
+          <button class="btn small" id="addr-check-copy" type="button" data-copy="ADDR_CHECK_COPY"></button>
+        </div>
+        <div class="sheet-foot">
+          <button class="btn grad-btn wide" type="button" data-close data-copy="COMPARE_CLOSE"></button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Why only 2 MB: a short answer from "2 MB in total", with the About page's longer one -->
+    <dialog id="size-why" class="sheet" aria-labelledby="size-why-title">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="size-why-title" tabindex="-1" autofocus>Why only 2 MB?</h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <p>
+          Slynk is built for the small things that matter most. Your data is split into small pieces and passed through a
+          worldwide network of computers, which mix it with everyone else’s traffic. That keeps it private, but it’s slow:
+          2 MB takes about four minutes.
+        </p>
+        <p>To make the most of the space, Slynk compresses what it can first, and can make photos, videos and documents smaller.</p>
+        <p class="sheet-note"><a href="/about/#size-limit" target="_blank" rel="noopener">More on the About page</a></p>
+        <div class="sheet-foot">
+          <button class="btn grad-btn wide" type="button" data-close>Close</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- release -->
+    <!-- The footer's "Run locally (download)": what a copy on your own computer changes, then the About page's downloads -->
+    <dialog id="local-why" class="sheet" aria-labelledby="local-why-title">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="local-why-title" tabindex="-1" autofocus>Run Slynk on your computer</h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <p>
+          You can download Slynk and run it on your own computer: Windows, macOS or Linux, not phones. It then makes no
+          requests to slynk.me’s website, so there are no visits for it to see, and the code you run stays the same until
+          you replace it.
+        </p>
+        <p>
+          It still needs the internet: it sends and receives through the xx network’s mixnet, and uses slynk.me’s key
+          server for each link’s key, so it can’t work offline.
+        </p>
+        <div class="sheet-foot row local-why-foot">
+          <a class="btn grad-btn" href="/about/#download" target="_blank" rel="noopener">See the downloads</a>
+          <button class="btn ghost" type="button" data-close>Not now</button>
+        </div>
+      </div>
+    </dialog>
+    <!-- /release -->
+
+    <!-- "What's happening?" beside "Working out the size…" while photos, videos or documents are made smaller -->
+    <dialog id="working-why" class="sheet" aria-labelledby="working-why-title">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="working-why-title" tabindex="-1" autofocus>What’s happening?</h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <p>
+          Slynk is making your files smaller, right here in your browser, so they send faster and everything you’ve chosen
+          fits in one link.
+          Nothing has been sent: your files haven’t left this device, and your originals stay untouched.
+        </p>
+        <p>
+          When it has finished and you click the button to send your files, they will be sent across the mixnet, in small
+          pieces mixed with everyone else’s traffic. That keeps them private, but it’s slow, so each link carries 2 MB at
+          most. Making photos, videos and documents smaller lets as much as you want to send fit through.
+        </p>
+        <p>Keep this page open until it’s done. A phone may pause it if you switch to another app.</p>
+        <div class="sheet-foot">
+          <button class="btn grad-btn wide" type="button" data-close>Close</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- A web link in a message: where it goes, before it opens in a new tab (ui/linkWarn.ts, texts from inbox/inboxCopy.ts) -->
+    <dialog id="link-warn" class="sheet" aria-labelledby="link-warn-title" aria-describedby="link-warn-text link-warn-careful">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="link-warn-title" tabindex="-1" autofocus></h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <!-- Where it goes, with Copy inside the box's right edge: to open it elsewhere, on another device, say -->
+        <div class="link-warn-box">
+          <p class="link-warn-host" id="link-warn-host"></p>
+          <button class="field-btn link-warn-copy" id="link-warn-copy" type="button" data-copy-label="LINK_COPY" data-copied="false">
+            <svg class="copy-do" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2" /><path d="M15.5 8.5V5a1.5 1.5 0 0 0-1.5-1.5H5A1.5 1.5 0 0 0 3.5 5v9A1.5 1.5 0 0 0 5 15.5h3.5" /></svg>
+            <svg class="copy-done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+          </button>
+        </div>
+        <p class="sr-only" id="link-warn-said" role="status" aria-live="polite"></p>
+        <p class="link-warn-full" id="link-warn-full" hidden></p>
+        <p id="link-warn-text"></p>
+        <p class="link-warn-careful" id="link-warn-careful" data-copy="LINK_CAREFUL" hidden></p>
+        <div class="sheet-foot row link-warn-foot">
+          <a class="btn grad-btn" id="link-warn-go" target="_blank" rel="noopener noreferrer" data-copy="LINK_GO"></a>
+          <button class="btn" type="button" data-close data-copy="LINK_CANCEL"></button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- What a received file's warning ⓘ opens: the line as its title, then why it matters (ui/fileWarn.ts, words from fileWarnCopy.ts) -->
+    <dialog id="file-warn" class="sheet" aria-labelledby="file-warn-title">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="file-warn-title" tabindex="-1" autofocus></h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <div id="file-warn-body"></div>
+        <p class="sheet-note"><a href="/about/#file-checks" target="_blank" rel="noopener">More on the About page</a></p>
+        <div class="sheet-foot">
+          <button class="btn grad-btn wide" type="button" data-close>Close</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Why every link opens once: a short answer from "Every Slynk link opens once only. Why?", with the About page's longer one (texts from burnCopy.ts) -->
+    <dialog id="once-why" class="sheet" aria-labelledby="once-why-title">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="once-why-title" tabindex="-1" autofocus></h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <div id="once-why-body"></div>
+        <p class="sheet-note"><a href="/about/#one-time-only" target="_blank" rel="noopener">More on the About page</a></p>
+        <div class="sheet-foot">
+          <button class="btn grad-btn wide" type="button" data-close>Close</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- "Show my passphrase…", from the inbox's menu when its words are remembered with a password: the password, then the words (inbox/showWords.ts) -->
+    <dialog id="words-show" class="sheet" aria-labelledby="words-show-title">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="words-show-title" tabindex="-1" autofocus data-copy="SHOW_WORDS_TITLE"></h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <div id="words-show-ask">
+          <p data-copy="SHOW_WORDS_LEAD"></p>
+          <label class="opts-label" for="words-show-pw" data-copy="SHOW_WORDS_PW"></label>
+          <div class="linkbox words-show-box">
+            <span class="field-wrap">
+              <input id="words-show-pw" class="pw-input" type="password" maxlength="400" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" />
+              <button class="field-btn eye-btn" type="button" aria-pressed="false" aria-controls="words-show-pw" id="words-show-eye">
+                <svg class="eye-shut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5c2.4 3.2 5.5 4.8 9 4.8s6.6-1.6 9-4.8" /><path d="M5.6 13.6 4 15.6M9.6 15.1 9 17.5M14.4 15.1l.6 2.4M18.4 13.6l1.6 2" /></svg>
+                <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+              </button>
+            </span>
+            <button class="btn" id="words-show-go" type="button" data-copy="SHOW_WORDS_GO"></button>
+          </div>
+          <p class="note pw-error" id="words-show-error" role="alert" hidden></p>
+        </div>
+        <div id="words-show-words" hidden>
+          <p class="note once" data-copy="SHOW_WORDS_CAREFUL"></p>
+          <ol class="words" id="words-show-list" data-copy-label="SHOW_WORDS_TITLE"></ol>
+          <button class="btn small" id="words-show-copy" type="button" data-copy="WORDS_COPY"></button>
+        </div>
+        <div class="sheet-foot">
+          <button class="btn grad-btn wide" type="button" data-close data-copy="COMPARE_CLOSE"></button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Scanning an inbox's QR code, from New message (inbox/scan.ts, texts from inbox/inboxCopy.ts) -->
+    <dialog id="scan" class="sheet scan-sheet" aria-labelledby="scan-title">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="scan-title" tabindex="-1" autofocus data-copy="SCAN_LABEL"></h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <div class="scan-view" id="scan-view">
+          <video id="scan-video" playsinline muted autoplay disablepictureinpicture disableremoteplayback aria-hidden="true"></video>
+          <span class="scan-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span>
+        </div>
+        <p class="scan-line" id="scan-line" role="status"></p>
+        <div class="sheet-foot scan-foot">
+          <button class="btn" id="scan-photo" type="button" data-copy="SCAN_PHOTO"></button>
+          <button class="btn ghost" type="button" data-close data-copy="SCAN_CANCEL"></button>
+        </div>
+        <input type="file" id="scan-file" class="sr-only" accept="image/*" tabindex="-1" aria-hidden="true" />
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

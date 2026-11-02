@@ -1,0 +1,119 @@
+# Slynk site rules, for a web server that reads .htaccess files.
+# Ships with every build, into the website's folder.
+
+Options -Indexes
+DirectoryIndex index.html
+
+# --- For a shared web host that runs PHP (not Slynk's own) --------------------
+# Slynk uses no PHP, sessions, uploads or forms (its CSP allows no form to be
+# sent). These are precautions for the host's PHP, after security advisories
+# (2026-10-22), kept here so every deploy keeps them. A copy hosted elsewhere
+# can drop them: a server without PHP's own module may refuse php_flag lines.
+#   - Session upload progress off, as the advice after patching was.
+#   - Any request carrying an upload (multipart/form-data) is refused, which
+#     also does what turning PHP's file uploads off would (a setting PHP lets
+#     only its own configuration change, not this file).
+#   - Any request for a PHP file is refused, so PHP runs for nothing at all.
+php_flag session.upload_progress.enabled off
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTP:Content-Type} ^[[:space:]]*multipart/form-data([;,[:space:]]|$) [NC]
+RewriteRule ^ - [F,L]
+RewriteRule \.(php[0-9]*|phtml|phar|phps|pht)(/|$) - [F,NC,L]
+</IfModule>
+
+# Our own page for unknown addresses and refused requests: some web hosts'
+# default ones load analytics, fonts and scripts from other sites.
+ErrorDocument 403 /404.html
+ErrorDocument 404 /404.html
+
+RewriteEngine On
+
+# HTTPS only.
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# A host may deploy this folder as a git checkout; never serve its .git data.
+RewriteRule (^|/)\.git(/|$) - [F,L]
+
+# --- Security headers ---------------------------------------------------------
+# "always" puts these on every response, redirects and error pages included;
+# plain "set" leaves error pages bare. vite.config.ts reads the lines below so
+# `vite preview` sends the same headers.
+#
+# connect-src lists everything the page may talk to: slynk.me's key server
+# (k.slynk.me, our own: src/site.ts KEY_SERVER), the signed network
+# definition on S3, the xx client registrar (once per new identity) and the
+# xx gateways. Nothing else, so no trackers or CDNs. 'wasm-unsafe-eval' lets
+# the WebAssembly core compile; it does not allow JavaScript eval. media-src
+# blob: lets the page play a video it holds in memory (one made smaller to
+# send, or one that arrived), in the phone's own player; blob: addresses are
+# the page's own, never another site's.
+Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; media-src blob:; connect-src 'self' https://k.slynk.me https://elixxir-bins.s3.us-west-1.amazonaws.com https://registrar.mainnet.cmix.rip:11420 https://*.xxnode.io:*; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+Header always set Referrer-Policy "no-referrer"
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+# Cross-origin isolation. The page gets a browsing context group of its own
+# (COOP) and loads only what agrees to it (COEP: our files, and the network's
+# endpoints, which answer with CORS), so browsers can keep it, with the keys
+# and messages in its memory, in a process apart from other sites. CORP stops
+# other sites loading our files.
+Header always set Cross-Origin-Opener-Policy "same-origin"
+Header always set Cross-Origin-Embedder-Policy "require-corp"
+Header always set Cross-Origin-Resource-Policy "same-origin"
+# The page writes to the clipboard ("Copy link") and, for an inbox's owner who
+# taps "Scan a QR code", uses the camera; only this site's own page may ask
+# for it, and the browser asks the visitor (or follows a choice they saved).
+# During a send or collect it keeps the screen on (a screen wake lock), so a
+# phone doesn't lock part-way; only this site's own page may.
+# Features it never uses
+# that reach devices, sensors, the screen, the local network, location or ID
+# wallets, reveal fonts or the keyboard layout, or serve ad tracking, are off.
+# Every name here is one Chrome recognises (it warns about unknown ones;
+# checked against Chromium's list, 2026-10-22).
+Header always set Permissions-Policy "accelerometer=(), browsing-topics=(), camera=(self), clipboard-read=(), compute-pressure=(), digital-credentials-get=(), display-capture=(), gamepad=(), geolocation=(), gyroscope=(), hid=(), identity-credentials-get=(), idle-detection=(), interest-cohort=(), keyboard-map=(), local-fonts=(), local-network=(), loopback-network=(), magnetometer=(), microphone=(), midi=(), otp-credentials=(), payment=(), private-state-token-issuance=(), private-state-token-redemption=(), publickey-credentials-get=(), screen-wake-lock=(self), serial=(), usb=(), window-management=(), xr-spatial-tracking=()"
+# Browsers remember for a year to use only HTTPS here.
+Header always set Strict-Transport-Security "max-age=31536000"
+# Some web hosts label every response with their name; no need to advertise it.
+Header always unset platform
+Header always unset panel
+
+# --- Pre-compressed WebAssembly -----------------------------------------------
+# Web hosts often don't compress .wasm themselves, so builds ship .wasm.br and
+# .wasm.gz copies (see web/scripts/precompress.mjs). Serve the best one this
+# browser accepts, labelled so the browser decompresses it transparently.
+RewriteCond %{HTTP:Accept-Encoding} \bbr\b
+RewriteCond %{REQUEST_FILENAME}.br -f
+RewriteRule ^(.+\.wasm)$ $1.br [L,E=no-gzip:1]
+RewriteCond %{HTTP:Accept-Encoding} \bgzip\b
+RewriteCond %{REQUEST_FILENAME}.gz -f
+RewriteRule ^(.+\.wasm)$ $1.gz [L,E=no-gzip:1]
+<FilesMatch "\.wasm\.br$">
+  ForceType application/wasm
+  Header set Content-Encoding br
+  Header append Vary Accept-Encoding
+</FilesMatch>
+<FilesMatch "\.wasm\.gz$">
+  ForceType application/wasm
+  Header set Content-Encoding gzip
+  Header append Vary Accept-Encoding
+</FilesMatch>
+
+# --- Types and caching --------------------------------------------------------
+AddType application/wasm .wasm
+AddType text/javascript .js .mjs
+<FilesMatch "\.html$">
+  Header set Cache-Control "no-cache"
+</FilesMatch>
+# Vite gives built assets content-hashed names, so they can be cached forever.
+<FilesMatch "-[A-Za-z0-9_-]{8,}\.(js|css|wasm)(\.br|\.gz)?$">
+  Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+# Workers too. A worker takes its CSP and COEP from its own response, so a
+# copy cached for a year would keep old headers after we change them (on
+# 2026-10-15 that stopped the cleaner starting under the new COEP, when
+# workers were renamed only when their code changed). Their names now also
+# carry a hash of the "Header always set" lines above (vite.config.ts), so
+# changing any of those renames every worker. Cached, a worker started later
+# in a visit fetches nothing, so these logs can't tell who used a password or
+# scanned a code (web/src/preload.ts).

@@ -1,0 +1,124 @@
+# /etc/caddy/Caddyfile: the website on a current Caddy (2.11 here, from Caddy's
+# own package source: Debian 13's 2.6 offers no quantum-safe key exchange),
+# doing what
+# web/public/.htaccess does on a host that reads .htaccess files. README.md
+# beside this file says how to set it up.
+#
+# The site's address comes from SLYNK_SITE (slynk.me: SLYNK_SITE=slynk.me in
+# /etc/caddy/slynk/env, which caddy.service reads through a drop-in).
+#
+# No request is logged: Caddy logs requests only for a site with a `log`
+# directive, and none has one. Its own messages (certificates, errors) go to
+# the system journal.
+{
+	# Caddy names the request (its address included) when a page fails with a
+	# server error. Those messages are left out, so nothing names a visitor.
+	log default {
+		exclude http.log.error
+	}
+	# Certificates from Let's Encrypt only, with no email address.
+	cert_issuer acme
+	# The redirects to https:// are the site's own (below), so they carry the
+	# same headers. Certificate checks over http still work.
+	auto_https disable_redirects
+	servers {
+		# HTTP/1.1 and HTTP/2 over TCP. No HTTP/3: the firewall lets no UDP in,
+		# and announcing it would only make browsers try.
+		protocols h1 h2
+	}
+}
+
+# A redirect to the same address on the site, with the same headers.
+(to_site) {
+	import /etc/caddy/slynk/headers.caddy
+	header -Server
+	redir https://{$SLYNK_SITE}{uri} 301
+}
+
+# Plain http, and the www name.
+http://{$SLYNK_SITE}, http://www.{$SLYNK_SITE}, www.{$SLYNK_SITE} {
+	import to_site
+}
+
+# Other names that only send people here (slynk.me's: slynk.to), each in a
+# file of its own on the server, e.g. /etc/caddy/slynk/redirects/example.net:
+#   example.net, www.example.net, http://example.net, http://www.example.net {
+#   	import to_site
+#   }
+# None is needed.
+import /etc/caddy/slynk/redirects/*
+
+{$SLYNK_SITE} {
+	root * /srv/slynk/current
+
+	# The security headers, on every response. deploy.sh writes this file from
+	# the deployed build's own .htaccess (its "Header always set" lines), so
+	# they always match the build: its workers' names carry a hash of them.
+	import /etc/caddy/slynk/headers.caddy
+	# Caddy names itself in every response; no need to.
+	header -Server
+
+	@upload header_regexp Content-Type (?i)^\s*multipart/form-data([;,\s]|$)
+	@php path_regexp (?i)\.(php[0-9]*|phtml|phar|phps|pht)(/|$)
+
+	# The WebAssembly ships only compressed (CI drops the raw files): serve the
+	# copy this browser accepts, labelled so it unpacks it.
+	@wasm_br {
+		path *.wasm
+		header_regexp Accept-Encoding \bbr\b
+		file {path}.br
+	}
+	@wasm_gz {
+		path *.wasm
+		header_regexp Accept-Encoding \bgzip\b
+		file {path}.gz
+	}
+	@br path *.wasm.br
+	@gz path *.wasm.gz
+	# Everything but the compressed copies is compressed as it's sent.
+	@compressible not path *.br *.gz
+	@html path_regexp (\.html|/)$
+	# Built files have content-hashed names, so they can be cached forever.
+	# Workers too: their names also carry a hash of the security headers, so
+	# changing those renames them.
+	@hashed path_regexp -[A-Za-z0-9_-]{8,}\.(js|css|wasm)(\.br|\.gz)?$
+
+	route {
+		# Nothing here takes uploads or runs PHP (there's no PHP at all).
+		error @upload 403
+		error @php 403
+
+		rewrite @wasm_br {path}.br
+		rewrite @wasm_gz {path}.gz
+		header @br {
+			Content-Type application/wasm
+			Content-Encoding br
+			+Vary Accept-Encoding
+		}
+		header @gz {
+			Content-Type application/wasm
+			Content-Encoding gzip
+			+Vary Accept-Encoding
+		}
+		header @html Cache-Control no-cache
+		header @hashed Cache-Control "public, max-age=31536000, immutable"
+		encode @compressible {
+			zstd
+			gzip
+		}
+		file_server {
+			hide .htaccess .git
+		}
+	}
+
+	handle_errors {
+		import /etc/caddy/slynk/headers.caddy
+		header -Server
+		header Cache-Control no-cache
+		@missing expression {err.status_code} == 404
+		handle @missing {
+			rewrite * /404.html
+			file_server
+		}
+	}
+}

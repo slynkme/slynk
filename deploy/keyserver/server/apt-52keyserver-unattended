@@ -1,0 +1,12 @@
+// /etc/apt/apt.conf.d/52keyserver-unattended: restart the machine only when
+// an update needs it (a new kernel), at a quiet hour of your choosing (UTC).
+// The key server saves its waiting halves when it stops cleanly, so these
+// restarts lose nothing. Don't publish the time.
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-WithUsers "true";
+Unattended-Upgrade::Automatic-Reboot-Time "03:40";
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+// Old kernels go once a newer one is installed (the running one and one spare
+// stay), so updates don't fill the disk over the years.
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+Unattended-Upgrade::Remove-New-Unused-Dependencies "true";

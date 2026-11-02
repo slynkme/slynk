@@ -1,0 +1,188 @@
+/* The file-prep example: plain, readable on a phone, light or dark. */
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7fb;
+  --text: #15161c;
+  --muted: #5d6275;
+  --line: #d9dce6;
+  --accent: #5b4bdb;
+  --on-accent: #fff;
+  --surface: #fff;
+  --warn: #b3261e;
+  font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #05060b;
+    --text: #eef0f8;
+    --muted: #9aa0b5;
+    --line: #262a3a;
+    --accent: #8b7bff;
+    --on-accent: #0a0b12;
+    --surface: #10121e;
+    --warn: #ff8a80;
+  }
+}
+[hidden] {
+  display: none !important;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+h1 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+h2 {
+  font-size: 1.1rem;
+  margin-top: 1.5rem;
+}
+section {
+  border-top: 1px solid var(--line);
+}
+.lead,
+.muted {
+  color: var(--muted);
+}
+button,
+.button {
+  display: inline-block;
+  font: inherit;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+  cursor: pointer;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+button.quiet,
+.button.quiet {
+  background: transparent;
+  color: var(--accent);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+input[type='number'] {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.2rem 0.4rem;
+  width: 9rem;
+  max-width: 100%;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+.drop {
+  border: 2px dashed var(--line);
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  text-align: center;
+}
+.drop.over {
+  border-color: var(--accent);
+}
+.chosen,
+.list {
+  padding-left: 0;
+  list-style: none;
+}
+.chosen li {
+  overflow-wrap: anywhere;
+}
+.choices {
+  border: 0;
+  margin: 0.75rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.choices legend {
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 0.25rem;
+}
+.row {
+  display: block;
+  margin: 0.75rem 0;
+}
+.row select {
+  margin-left: 0.5rem;
+}
+select {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.2rem 0.4rem;
+  max-width: 100%;
+}
+.small {
+  font-size: 0.9rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.chosen li {
+  margin-bottom: 0.4rem;
+}
+.bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--line);
+  overflow: hidden;
+}
+.fill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+}
+.total {
+  font-weight: 600;
+}
+.total.over,
+.problem {
+  color: var(--warn);
+}
+.item {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.25rem 1rem;
+  margin-bottom: 0.75rem;
+  overflow-wrap: anywhere;
+}
+.item p {
+  margin: 0.5rem 0;
+}
+.name {
+  font-weight: 600;
+}
+.removed {
+  padding-left: 1.2rem;
+  margin: 0;
+}
+.removed .label {
+  color: var(--muted);
+}
+/* A zip's files, each in a box of its own inside the zip's. */
+.inside .item {
+  background: var(--bg);
+}

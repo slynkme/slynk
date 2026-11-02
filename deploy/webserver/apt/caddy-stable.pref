@@ -1,0 +1,9 @@
+# /etc/apt/preferences.d/caddy-stable: Caddy's own package source may supply
+# caddy and nothing else, so it can never replace another package.
+Package: caddy
+Pin: origin dl.cloudsmith.io
+Pin-Priority: 500
+
+Package: *
+Pin: origin dl.cloudsmith.io
+Pin-Priority: -1

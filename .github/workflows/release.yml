@@ -1,0 +1,129 @@
+# Builds the desktop app's downloads (lab/run-locally) from a commit of main,
+# and shows their SHA-256. Run by hand only: Actions → "Release the desktop
+# app" → Run workflow. With "Make a draft release" ticked it also makes a
+# draft release on GitHub holding them, which nobody else sees until someone
+# presses Publish on it; nothing here publishes anything by itself (a
+# person publishes each release). The same commit always builds to the
+# same bytes, so anyone can rebuild a release and match its checksums. A
+# release made from a public repository also gets GitHub's signed build
+# record for each download (the attest job).
+name: Release the desktop app
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version, like v1.0.0"
+        required: true
+      draft:
+        description: "Make a draft release (unticked, it only builds and shows the checksums)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # the draft release
+    outputs:
+      sums: ${{ steps.build.outputs.sums }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # npm's install scripts run below; leave them no token to find.
+          persist-credentials: false
+
+      # The versions deploy.yml builds the site with.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.22.1
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: 1.27.2
+          cache-dependency-path: core/go.sum
+
+      - name: Build
+        id: build
+        env:
+          VERSION: ${{ inputs.version }}
+          PUBLIC: ${{ !github.event.repository.private }}
+        run: |
+          set -euo pipefail
+          [[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "The version must look like v1.0.0, not $VERSION"; exit 1; }
+          (cd web && npm ci --no-audit --no-fund && npm run build:deploy)
+          lab/run-locally/package.sh web/dist release
+          commit=$(git rev-parse HEAD)
+          {
+            echo "The desktop app $VERSION, built from commit $commit. The website inside is that commit's build, as listed in its SHA256SUMS.txt on the deploy branch, less the brotli copies."
+            echo
+            # The About page's "How do I start it…?" answers, for anyone who
+            # downloads from here: the downloads aren't signed, so the first
+            # start asks.
+            cat <<'START'
+          **Starting it the first time.** The downloads aren't signed by Apple or Microsoft, so the first time, your computer asks before opening them:
+
+          - **Mac:** double-click the zip, then Slynk in the folder it makes. macOS won't open it the first time: close its message (Done), then in System Settings › Privacy & Security, scroll down to Security and click Open Anyway beside "Slynk was blocked to protect your Mac". Click Open Anyway again (Open, on older macOS) and enter your password. You do this once for each new version.
+          - **Windows:** double-click slynk.exe, and if "Windows protected your PC" appears, click More info, then Run anyway. If Smart App Control is on (Windows 11), it may block Slynk without offering Run anyway.
+          - **Linux:** unzip it, then run `./slynk` in a terminal. The first time, it adds itself to your apps menu.
+
+          Before running a download, check its SHA-256 matches the list below: if a single character differs, don't run it.
+          START
+            echo
+            echo "SHA-256 of each download:"
+            echo
+            echo '```'
+            cat release/SHA256SUMS.txt
+            echo '```'
+            echo
+            echo "To rebuild them: check out $commit, then \`npm ci && npm run build:deploy\` in web/ and \`lab/run-locally/package.sh web/dist OUT\`, with Node 24.22.1 and Go 1.27.2."
+            if [ "$PUBLIC" = true ]; then
+              echo
+              echo "Each download has GitHub's signed build record, naming this repository, its release workflow and the commit. With GitHub's \`gh\` command: \`gh attestation verify slynk.exe --repo $GITHUB_REPOSITORY\`."
+            fi
+          } > notes.md
+          cat notes.md >> "$GITHUB_STEP_SUMMARY"
+          { echo 'sums<<END_OF_SUMS'; cat release/SHA256SUMS.txt; echo 'END_OF_SUMS'; } >> "$GITHUB_OUTPUT"
+
+      - name: Make a draft release
+        if: inputs.draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          gh release create "$VERSION" --draft --target "$GITHUB_SHA" --repo "$GITHUB_REPOSITORY" \
+            --title "Slynk desktop app $VERSION" --notes-file notes.md \
+            release/slynk.exe release/slynk-*.zip release/SHA256SUMS.txt
+
+  # GitHub's signed build record (SLSA provenance) for each download, in a job
+  # of its own: only it may ask for a signing token, and nothing of npm's runs
+  # in it. It signs the checksums the build job worked out. Only for a release
+  # (a dry run leaves none), and only from a public repository: GitHub's plans
+  # give private ones none without Enterprise Cloud, and a public one's records
+  # go into Sigstore's public log for good, naming the repository, this
+  # workflow and the commit.
+  attest:
+    needs: build
+    if: inputs.draft && !github.event.repository.private
+    runs-on: ubuntu-24.04
+    permissions:
+      id-token: write
+      attestations: write
+    steps:
+      - name: List the downloads
+        env:
+          SUMS: ${{ needs.build.outputs.sums }}
+        run: printf '%s\n' "$SUMS" > "$RUNNER_TEMP/SHA256SUMS.txt"
+
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-checksums: ${{ runner.temp }}/SHA256SUMS.txt

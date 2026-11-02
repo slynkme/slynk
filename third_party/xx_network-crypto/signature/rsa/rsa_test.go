@@ -1,0 +1,444 @@
+////////////////////////////////////////////////////////////////////////////////
+// Copyright © 2022 xx foundation                                             //
+//                                                                            //
+// Use of this source code is governed by a license that can be found in the  //
+// LICENSE file.                                                              //
+////////////////////////////////////////////////////////////////////////////////
+
+package rsa
+
+import (
+	"bytes"
+	"crypto"
+	"crypto/rand"
+	"crypto/sha256"
+	"testing"
+
+	json "github.com/goccy/go-json"
+	"gitlab.com/xx_network/crypto/testkeys"
+	"golang.org/x/crypto/blake2b"
+)
+
+// TestRSASmoke loads a pre-generated key, verifies its values match expected,
+// signs and verifies a datapacket.
+func TestRSASmoke(t *testing.T) {
+	expected_hash := []byte{23, 140, 202, 65, 134, 231, 87, 45, 172, 155,
+		162, 229, 39, 144, 179, 0, 86, 225, 154, 65, 177, 158, 176, 4,
+		76, 67, 157, 4, 91, 80, 2, 227}
+	expected_N := []byte{0xb4, 0x37, 0x34, 0x7c, 0x1d, 0xc3, 0x14, 0xac,
+		0x20, 0x9f, 0x19, 0x1e, 0xf2, 0x2b, 0xc7, 0xb5, 0xb0, 0xec,
+		0xd4, 0x64, 0xbe, 0x78, 0xf8, 0x59, 0xd2, 0x32, 0xa4, 0xf3,
+		0x08, 0xbc, 0xfa, 0xe6, 0x7f, 0x9f, 0x00, 0x95, 0x5a, 0x06,
+		0x8c, 0x2e, 0xf9, 0x6a, 0x95, 0xf3, 0xc1, 0xdf, 0xda, 0xcc,
+		0x8c, 0xfa, 0xd8, 0xa5, 0x71, 0x07, 0x33, 0xd3, 0x0f, 0xc9,
+		0xf0, 0x5a, 0x9c, 0x67, 0x66, 0x28, 0xf2, 0xd1, 0x76, 0x11,
+		0x28, 0xcd, 0xaf, 0x38, 0xca, 0xd3, 0x3c, 0x26, 0x02, 0x19,
+		0x44, 0x86, 0xfa, 0xa1, 0xa2, 0xc0, 0xd0, 0x19, 0xd3, 0xdf,
+		0x7e, 0xf5, 0x5b, 0x19, 0xdc, 0xac, 0x37, 0x7b, 0xd8, 0x97,
+		0x5b, 0xa1, 0xd0, 0x1a, 0x5c, 0xc2, 0x8e, 0x69, 0x5e, 0x5c,
+		0x4c, 0x2d, 0xc9, 0x2a, 0x14, 0xff, 0xe1, 0x2e, 0x22, 0x74,
+		0x0a, 0x40, 0x02, 0x30, 0x6f, 0x46, 0xe3, 0xb0, 0xfb, 0xad}
+	expected_D := []byte{0x14, 0xb0, 0xbe, 0xdf, 0x9e, 0x1a, 0x22, 0xe2,
+		0x35, 0x37, 0x96, 0xee, 0x80, 0xde, 0xca, 0x65, 0xbf, 0x8b,
+		0x9d, 0x41, 0xf8, 0xc5, 0x52, 0x3c, 0x1b, 0xc0, 0x31, 0x44,
+		0x6e, 0xe5, 0x25, 0x88, 0x37, 0xb0, 0x45, 0x64, 0xa0, 0x4a,
+		0x9e, 0xa7, 0x18, 0xff, 0x25, 0xfa, 0xaf, 0xb0, 0x58, 0x02,
+		0x42, 0x90, 0x5d, 0x35, 0xb7, 0x61, 0x9c, 0x8f, 0x57, 0xa1,
+		0x77, 0x6d, 0x2b, 0xc6, 0x4a, 0x49, 0xe9, 0x6d, 0x40, 0xff,
+		0xb2, 0xea, 0x63, 0xe4, 0xc7, 0xd9, 0x55, 0xc0, 0xee, 0xe5,
+		0xa3, 0x0f, 0x94, 0x75, 0x8b, 0x7c, 0xe9, 0xc9, 0x7a, 0x3d,
+		0x4b, 0xf7, 0x9f, 0x46, 0x82, 0x77, 0xd5, 0x43, 0x71, 0xbd,
+		0x40, 0x9c, 0xdc, 0x49, 0x9b, 0x19, 0x5a, 0x30, 0x8c, 0xa9,
+		0x48, 0xf2, 0x49, 0x76, 0x89, 0xd7, 0xa9, 0x1c, 0x9f, 0xc5,
+		0x94, 0x0d, 0xa9, 0x6b, 0xda, 0x9b, 0x86, 0xc8, 0x53, 0x99}
+	expected_Dp := []byte{0x82, 0xc8, 0x0b, 0x48, 0x40, 0xdb, 0x29, 0x98,
+		0x97, 0xd3, 0xb0, 0xa7, 0x72, 0xad, 0xc8, 0xf4, 0xbc, 0xda,
+		0x9f, 0xf1, 0x8d, 0x63, 0xb3, 0x4c, 0x01, 0x83, 0xdc, 0xd3,
+		0x0b, 0xd4, 0x65, 0x4e, 0xa0, 0xea, 0xe0, 0x01, 0x4b, 0x48,
+		0x34, 0xd6, 0xeb, 0xd8, 0x70, 0x99, 0xd4, 0x9b, 0xd2, 0x59,
+		0xa7, 0xb2, 0xde, 0xa0, 0xe9, 0x27, 0x50, 0x9c, 0x1f, 0x8b,
+		0x5e, 0x4a, 0x4b, 0x73, 0x2a, 0x99}
+	expected_Dq := []byte{0x3a, 0x59, 0x61, 0xf3, 0x7a, 0xb1, 0x3f, 0xf4,
+		0x1b, 0xa3, 0x2f, 0xa8, 0x95, 0x85, 0x6a, 0x7c, 0x8e, 0xf5,
+		0xc7, 0x63, 0x13, 0xdf, 0x7a, 0x03, 0xda, 0x6b, 0x1a, 0x71,
+		0xdc, 0xde, 0x14, 0xcc, 0xf1, 0x4d, 0x40, 0x39, 0xe8, 0x82,
+		0xa7, 0xa5, 0xf0, 0x27, 0x8d, 0x8f, 0xf1, 0x42, 0x00, 0xa4,
+		0xce, 0xcd, 0x57, 0x04, 0xca, 0xa1, 0x76, 0x51, 0x50, 0x44,
+		0x01, 0xbf, 0x9d, 0x51, 0xfc, 0xd1}
+	expected_primes := [2][]byte{
+		{0xda, 0x2c, 0xe9, 0x79, 0x76, 0x2c, 0x2f, 0x48, 0x31, 0x3d,
+			0x89, 0xcc, 0x65, 0xed, 0x02, 0x33, 0x0f, 0xd9, 0xb6, 0xdf,
+			0x89, 0x7c, 0x83, 0xd0, 0x40, 0xa4, 0x84, 0x6f, 0x12, 0x39,
+			0x14, 0x29, 0x82, 0xee, 0xb4, 0x6a, 0x9a, 0xe1, 0x67, 0xe9,
+			0xa3, 0xd0, 0x4d, 0x60, 0xe3, 0x6f, 0x9d, 0x31, 0x95, 0x90,
+			0x2d, 0xe6, 0x92, 0x3e, 0x8e, 0x83, 0x05, 0x7a, 0x1f, 0xd3,
+			0x05, 0x84, 0x15, 0x39},
+		{0xd3, 0x75, 0x8e, 0x97, 0xd1, 0xdc, 0x7a, 0x28, 0x98, 0x15,
+			0x73, 0x65, 0xd3, 0xea, 0xef, 0x8c, 0xd8, 0x90, 0xd2, 0x8a,
+			0xe3, 0xc7, 0xcc, 0x67, 0xcc, 0x91, 0xef, 0x15, 0x39, 0x79,
+			0x24, 0xca, 0xcd, 0x77, 0x1a, 0x6e, 0x8a, 0xae, 0x84, 0xf6,
+			0x8a, 0x77, 0xe6, 0x0f, 0x0b, 0xa2, 0xb5, 0xa2, 0x8f, 0xbe,
+			0x65, 0xd7, 0x5d, 0xea, 0x61, 0xff, 0xfa, 0xdd, 0xa8, 0x48,
+			0x77, 0x63, 0x2e, 0x15},
+	}
+
+	data := []byte("Hello, World")
+	opts := NewDefaultOptions()
+	hash := opts.Hash.New()
+	hash.Write(data)
+	hashed := hash.Sum(nil)
+
+	if !bytes.Equal(hashed, expected_hash) {
+		t.Logf("\nData: %v\nHash: %v\n", data, hashed)
+		t.Errorf("Unexpected hash value, expected: %v", expected_hash)
+	}
+
+	// Load pre-generated test key
+	pemBytes, err := testkeys.LoadTestRSAKeyPem()
+	if err != nil {
+		t.Fatalf("Failed to load test RSA key PEM: %v", err)
+	}
+	privateKey, err := LoadPrivateKeyFromPem(pemBytes)
+	if err != nil {
+		t.Fatalf("Failed to parse test RSA key: %v", err)
+	}
+	privateKey.Precompute() // Generates Dq/Dp
+
+	publicKey := privateKey.Public().(*PublicKey)
+	if !bytes.Equal(publicKey.GetN().Bytes(), expected_N) {
+		t.Logf("N: %v", publicKey.GetN().Bytes())
+		t.Errorf("Bad N-val, expected: %v", expected_N)
+	}
+
+	if !bytes.Equal(privateKey.GetD().Bytes(), expected_D) ||
+		!bytes.Equal(privateKey.GetDp().Bytes(), expected_Dp) ||
+		!bytes.Equal(privateKey.GetDq().Bytes(), expected_Dq) {
+		t.Logf("\nPrivateKey D-Vals: \n\t%v \n\t%v \n\t%v",
+			privateKey.GetD().Bytes(),
+			privateKey.GetDp().Bytes(),
+			privateKey.GetDq().Bytes(),
+		)
+		t.Errorf("Bad D-Values!")
+	}
+
+	ps := privateKey.GetPrimes()
+	for i := 0; i < len(ps); i++ {
+		if !bytes.Equal(ps[i].Bytes(), expected_primes[i]) {
+			t.Logf("Prime %d: %v", i, ps[i].Bytes())
+			t.Fatalf("Bad prime value for prime %d", i)
+		}
+	}
+
+	// Sign and verify (signature bytes are non-deterministic due to PKCS#1 v1.5 padding)
+	signature, err := Sign(rand.Reader, privateKey, opts.Hash, hashed, nil)
+	if err != nil {
+		t.Errorf("Failed to sign: %v", err)
+	}
+
+	verification := Verify(publicKey, opts.Hash, hashed, signature, nil)
+	if verification != nil {
+		t.Errorf("Could not verify signature: %v", verification)
+	}
+}
+
+// TestIsValidSignature creates a signature off of a signer's key and
+// checks its validity using IsValidSignature.
+// It also creates an arbitrary, invalid byte slice and checks its validity
+// against the signer's keys
+// It finally creates an arbitrary byte slice of a valid size and
+// checks its validity
+func TestIsValidSignature(t *testing.T) {
+	// Generate signer's private key and public key
+	serverPrivKey, err := GenerateKey(rand.Reader, 1024)
+	if err != nil {
+		t.Errorf("Failed to generate private key: %+v", err)
+	}
+	serverPubKey := serverPrivKey.GetPublic()
+
+	// Generate client's private and public key
+	clientPrivKey, err := GenerateKey(rand.Reader, 1024)
+	if err != nil {
+		t.Errorf("Failed to generate private key: %+v", err)
+	}
+	clientPubKey := clientPrivKey.GetPublic()
+
+	// Stringer client's public key so it can be signed by the signer
+	clientPubKeyStr := string(CreatePublicKeyPem(clientPubKey))
+
+	// Sign the clients  key with the server's key
+	h := sha256.New()
+	h.Write([]byte(clientPubKeyStr))
+	data := h.Sum(nil)
+	validSignature, err := Sign(rand.Reader, serverPrivKey, crypto.SHA256,
+		data, nil)
+	if err != nil {
+		t.Errorf("Failed to sign public key: %+v", err)
+	}
+
+	// Check if the signature is valid
+	if !IsValidSignature(serverPubKey, validSignature) {
+		t.Errorf("Failed smoke test! Signature is not at least as "+
+			"long as the signer's public key."+
+			"\n\tSignature: %+v"+
+			"\n\tSigner's public key: %+v", len(validSignature),
+			serverPubKey.Size())
+	}
+
+	// Create arbitrary byte slice of invalid size
+	incorrectSignature := make([]byte, 512)
+	_, err = rand.Read(incorrectSignature)
+	if err != nil {
+		t.Errorf("Failed to create random number")
+	}
+
+	// Test arbitrary slice with server's public key
+	if IsValidSignature(serverPubKey, incorrectSignature) {
+		t.Errorf("Invalid signature returned valid! "+
+			"\n\t Signature: %+v "+
+			"\n\t Signer's public key: %+v",
+			len(incorrectSignature), serverPubKey.Size())
+	}
+
+	// Create arbitrary byte slice of valid size
+	matchingSig := make([]byte, serverPubKey.Size())
+	_, err = rand.Read(incorrectSignature)
+	if err != nil {
+		t.Errorf("Failed to create random number")
+	}
+
+	// Check it against the server's public key
+	if !IsValidSignature(serverPubKey, matchingSig) {
+		t.Errorf("Expected valid signature!"+
+			"\n\t Signature: %+v"+
+			"\n\t Signer's public key: %+v", len(matchingSig),
+			serverPubKey.Size())
+	}
+}
+
+func TestRSABytesFromBytes(t *testing.T) {
+	serverPrivKey, err := GenerateKey(rand.Reader, 4096)
+	if err != nil {
+		t.Errorf("Failed to generate private key: %+v", err)
+	}
+	serverPubKey := serverPrivKey.GetPublic()
+	serverPubKeyBytes := serverPubKey.Bytes()
+	serverPubKey2 := new(PublicKey)
+	err = serverPubKey2.FromBytes(serverPubKeyBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	serverPubKey2Bytes := serverPubKey2.Bytes()
+	if !bytes.Equal(serverPubKeyBytes, serverPubKey2Bytes) {
+		t.Fatal("byte slices don't match")
+	}
+
+	message := []byte("fluffy bunny")
+	hash, _ := blake2b.New256(nil)
+	hash.Write(message)
+	hashed := hash.Sum(nil)
+	signature, err := Sign(rand.Reader, serverPrivKey, crypto.BLAKE2b_256,
+		hashed[:], nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = Verify(serverPubKey2, crypto.BLAKE2b_256, hashed[:], signature,
+		nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestPrivateKey_JSONMarshalUnmarshal tests JSON marshaling and unmarshaling
+// of PrivateKey using goccy/go-json.
+func TestPrivateKey_JSONMarshalUnmarshal(t *testing.T) {
+	// Load pre-generated test key
+	pemBytes, err := testkeys.LoadTestRSAKeyPem()
+	if err != nil {
+		t.Fatalf("Failed to load test RSA key PEM: %v", err)
+	}
+	original, err := LoadPrivateKeyFromPem(pemBytes)
+	if err != nil {
+		t.Fatalf("Failed to parse test RSA key: %v", err)
+	}
+
+	// Marshal to JSON
+	jsonData, err := json.Marshal(original)
+	if err != nil {
+		t.Fatalf("Failed to marshal PrivateKey to JSON: %v", err)
+	}
+
+	// Unmarshal back to PrivateKey
+	var restored PrivateKey
+	err = json.Unmarshal(jsonData, &restored)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal PrivateKey from JSON: %v", err)
+	}
+
+	// Verify the restored key matches the original
+	if !bytes.Equal(original.N.Bytes(), restored.N.Bytes()) {
+		t.Error("Restored PrivateKey N does not match original")
+	}
+	if !bytes.Equal(original.D.Bytes(), restored.D.Bytes()) {
+		t.Error("Restored PrivateKey D does not match original")
+	}
+	if original.E != restored.E {
+		t.Error("Restored PrivateKey E does not match original")
+	}
+
+	// Test that the restored key can sign and verify
+	message := []byte("test message for signing")
+	h := sha256.New()
+	h.Write(message)
+	hashed := h.Sum(nil)
+
+	signature, err := Sign(rand.Reader, &restored, crypto.SHA256, hashed, nil)
+	if err != nil {
+		t.Fatalf("Failed to sign with restored key: %v", err)
+	}
+
+	err = Verify(original.GetPublic(), crypto.SHA256, hashed, signature, nil)
+	if err != nil {
+		t.Fatalf("Failed to verify signature with original public key: %v", err)
+	}
+}
+
+// TestPublicKey_JSONMarshalUnmarshal tests JSON marshaling and unmarshaling
+// of PublicKey using goccy/go-json.
+func TestPublicKey_JSONMarshalUnmarshal(t *testing.T) {
+	// Load pre-generated test key
+	pemBytes, err := testkeys.LoadTestRSAKeyPem()
+	if err != nil {
+		t.Fatalf("Failed to load test RSA key PEM: %v", err)
+	}
+	privKey, err := LoadPrivateKeyFromPem(pemBytes)
+	if err != nil {
+		t.Fatalf("Failed to parse test RSA key: %v", err)
+	}
+	original := privKey.GetPublic()
+
+	// Marshal to JSON
+	jsonData, err := json.Marshal(original)
+	if err != nil {
+		t.Fatalf("Failed to marshal PublicKey to JSON: %v", err)
+	}
+
+	// Unmarshal back to PublicKey
+	var restored PublicKey
+	err = json.Unmarshal(jsonData, &restored)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal PublicKey from JSON: %v", err)
+	}
+
+	// Verify the restored key matches the original
+	if !bytes.Equal(original.N.Bytes(), restored.N.Bytes()) {
+		t.Error("Restored PublicKey N does not match original")
+	}
+	if original.E != restored.E {
+		t.Error("Restored PublicKey E does not match original")
+	}
+
+	// Test that the restored key can verify signatures
+	message := []byte("test message for verification")
+	h := sha256.New()
+	h.Write(message)
+	hashed := h.Sum(nil)
+
+	signature, err := Sign(rand.Reader, privKey, crypto.SHA256, hashed, nil)
+	if err != nil {
+		t.Fatalf("Failed to sign: %v", err)
+	}
+
+	err = Verify(&restored, crypto.SHA256, hashed, signature, nil)
+	if err != nil {
+		t.Fatalf("Failed to verify with restored public key: %v", err)
+	}
+}
+
+// TestPrivateKey_JSONInStruct tests that PrivateKey can be serialized
+// as part of a larger struct.
+func TestPrivateKey_JSONInStruct(t *testing.T) {
+	type KeyHolder struct {
+		Name string      `json:"name"`
+		Key  *PrivateKey `json:"key"`
+	}
+
+	// Load pre-generated test key
+	pemBytes, err := testkeys.LoadTestRSAKeyPem()
+	if err != nil {
+		t.Fatalf("Failed to load test RSA key PEM: %v", err)
+	}
+	privKey, err := LoadPrivateKeyFromPem(pemBytes)
+	if err != nil {
+		t.Fatalf("Failed to parse test RSA key: %v", err)
+	}
+
+	original := KeyHolder{
+		Name: "test-key",
+		Key:  privKey,
+	}
+
+	// Marshal to JSON
+	jsonData, err := json.Marshal(original)
+	if err != nil {
+		t.Fatalf("Failed to marshal struct with PrivateKey: %v", err)
+	}
+
+	// Unmarshal back
+	var restored KeyHolder
+	err = json.Unmarshal(jsonData, &restored)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal struct with PrivateKey: %v", err)
+	}
+
+	if restored.Name != original.Name {
+		t.Errorf("Name mismatch: got %s, want %s", restored.Name, original.Name)
+	}
+	if !bytes.Equal(original.Key.N.Bytes(), restored.Key.N.Bytes()) {
+		t.Error("Restored PrivateKey N does not match original")
+	}
+}
+
+// TestPublicKey_JSONInStruct tests that PublicKey can be serialized
+// as part of a larger struct.
+func TestPublicKey_JSONInStruct(t *testing.T) {
+	type KeyHolder struct {
+		Name string     `json:"name"`
+		Key  *PublicKey `json:"key"`
+	}
+
+	// Load pre-generated test key
+	pemBytes, err := testkeys.LoadTestRSAKeyPem()
+	if err != nil {
+		t.Fatalf("Failed to load test RSA key PEM: %v", err)
+	}
+	privKey, err := LoadPrivateKeyFromPem(pemBytes)
+	if err != nil {
+		t.Fatalf("Failed to parse test RSA key: %v", err)
+	}
+
+	original := KeyHolder{
+		Name: "test-public-key",
+		Key:  privKey.GetPublic(),
+	}
+
+	// Marshal to JSON
+	jsonData, err := json.Marshal(original)
+	if err != nil {
+		t.Fatalf("Failed to marshal struct with PublicKey: %v", err)
+	}
+
+	// Unmarshal back
+	var restored KeyHolder
+	err = json.Unmarshal(jsonData, &restored)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal struct with PublicKey: %v", err)
+	}
+
+	if restored.Name != original.Name {
+		t.Errorf("Name mismatch: got %s, want %s", restored.Name, original.Name)
+	}
+	if !bytes.Equal(original.Key.N.Bytes(), restored.Key.N.Bytes()) {
+		t.Error("Restored PublicKey N does not match original")
+	}
+}
