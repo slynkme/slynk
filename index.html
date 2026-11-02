@@ -1121,7 +1121,8 @@
         <span class="footer-inbox" id="footer-inbox"><a class="soft-link" href="/#/new-inbox" id="footer-create" data-copy="FOOTER_CREATE"></a><span id="footer-sep"> · </span><a class="soft-link" href="/#/open-inbox" id="footer-open" data-copy="FOOTER_OPEN"></a></span>
         <span>Slynk · built on the <a href="https://xx.network" target="_blank" rel="noopener noreferrer">xx network</a></span>
         <span>Open source · BSD 2-Clause</span>
-        <span>Build <span id="build">0347b1d · 2026-11-02 02:54 UTC</span></span>
+        <span class="on-web"><button class="soft-link" id="local-why-go" type="button" aria-haspopup="dialog">Run locally (download)</button></span>
+        <span>Build <span id="build">7051a41 · 2026-11-02 03:17 UTC</span></span>
       </footer>
     </div>
 
@@ -1539,6 +1540,30 @@
       </div>
     </dialog>
 
+    <!-- The footer's "Run locally (download)": what a copy on your own computer changes, then the About page's downloads -->
+    <dialog id="local-why" class="sheet" aria-labelledby="local-why-title">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h2 id="local-why-title" tabindex="-1" autofocus>Run Slynk on your computer</h2>
+          <button class="icon-btn" type="button" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <p>
+          You can download Slynk and run it on your own computer: Windows, macOS or Linux, not phones. It then makes no
+          requests to slynk.me’s website, so there are no visits for it to see, and the code you run stays the same until
+          you replace it.
+        </p>
+        <p>
+          It still needs the internet: it sends and receives through the xx network’s mixnet, and uses slynk.me’s key
+          server for each link’s key, so it can’t work offline.
+        </p>
+        <div class="sheet-foot row local-why-foot">
+          <a class="btn grad-btn" href="/about/#download" target="_blank" rel="noopener">See the downloads</a>
+          <button class="btn ghost" type="button" data-close>Not now</button>
+        </div>
+      </div>
+    </dialog>
 
     <!-- "What's happening?" beside "Working out the size…" while photos, videos or documents are made smaller -->
     <dialog id="working-why" class="sheet" aria-labelledby="working-why-title">

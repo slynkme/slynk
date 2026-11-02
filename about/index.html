@@ -164,6 +164,11 @@
                 <strong>No visits.</strong> The desktop app runs from your own computer, so slynk.me’s website never sees you.
               </li>
               <li class="on-web">
+                <strong>Nothing at all, from the desktop app.</strong> Slynk run from your own computer (see
+                <a href="#download">Run Slynk on your computer</a>) never touches slynk.me’s website: nothing is fetched from
+                it, so there’s no visit for it to see. The app still talks to the key server, cover requests included.
+              </li>
+              <li class="on-web">
                 <strong>No visit logs.</strong> When you use slynk.me’s website, it keeps no record of visits: not your
                 internet address, not when you came, not what you loaded. (Its hosting provider can still see connections: see
                 <a href="#honest-limits">The honest limits</a>.)
@@ -227,6 +232,10 @@
                 <strong>Use a VPN</strong>, so <span class="on-web">slynk.me’s website and key server, their hosting providers and the xx network</span><span class="on-local">slynk.me’s key server, its hosting provider and the xx network</span> see the
                 VPN’s address instead of yours.
               </li>
+              <li class="on-web">
+                <strong>Run Slynk from your own computer</strong>, so you never visit slynk.me’s website at all (see
+                <a href="#download">Run Slynk on your computer</a>).
+              </li>
               <li><strong>Share the link in person, or through an encrypted app you trust</strong>, not by email or social media.</li>
               <li class="on-local">
                 <strong>Paste the links you receive into the desktop app</strong>, rather than clicking them. A Slynk link you click
@@ -262,6 +271,188 @@
           </div>
         </details>
 
+        <!-- A copy of Slynk to run on your own computer, with the latest release's downloads (here
+             rather than on a page of its own, so the site's pages stay two). Left out of the built
+             page until there's a release (scripts/release.ts, src/site.ts RELEASE). -->
+        <details class="section" id="download">
+          <summary><h2>Run Slynk on your computer</h2></summary>
+          <div class="section-body">
+            <p>
+              <span class="on-web">You can download Slynk and run it from your own computer instead of from slynk.me.</span><span class="on-local">This is Slynk run from your own computer, instead of from slynk.me.</span> It’s the same Slynk, with the
+              same encryption and the same mixnet, in a window of its own.
+            </p>
+            <h3>What’s different</h3>
+            <ul class="doc-list">
+              <li>
+                <strong>No visits to slynk.me’s website.</strong> The page comes from your own computer, so slynk.me’s website and
+                its hosting provider never see you visit.
+              </li>
+              <li>
+                <strong>The code stays as you downloaded it.</strong> Nobody can change it from one day to the next, and you can
+                check it’s the official one (below).
+              </li>
+              <li>
+                <strong>A window of its own.</strong> With Chrome, Edge or Brave on your computer, Slynk opens in its own window,
+                with no address bar, no browser extensions (which can read pages), no account signed in, and its history kept
+                apart from your everyday browsing. Otherwise it opens in your usual browser. Closing it stops Slynk.
+              </li>
+              <li>
+                <strong>Paste or scan the links you receive.</strong> A link you click opens on slynk.me in your browser. To open
+                it in the desktop app instead, paste it into “Received a Slynk link?” at the top of its page, or scan its QR code
+                with the camera button there (a photo or screenshot works too): it then never goes near slynk.me’s website, or
+                your browser’s history. An inbox’s address opens the same way.
+              </li>
+              <li>
+                <strong>Its own inbox and settings.</strong> An inbox kept on slynk.me isn’t kept in the desktop app, or the other way
+                round: unlock it there once with its passphrase.
+              </li>
+              <li>
+                <strong>Inbox only, nothing but the xx network.</strong> Use only an inbox and switch Cover requests off in
+                Settings, and the desktop app talks to nothing but the xx network: its directory, the service that admits each
+                new connection, and its gateways. slynk.me’s key server hears from it only when you make, open or cancel a
+                link.
+              </li>
+            </ul>
+            <h3>What stays the same</h3>
+            <ul class="doc-list">
+              <li>
+                <strong>It still needs the internet.</strong> The xx network’s computers still see your internet address, and
+                slynk.me’s key server still holds its half of each one-time link’s key, in its memory only, and gets your
+                cover requests. So it can’t work offline, and a VPN still helps.
+              </li>
+              <li><strong>Links you make start with https://slynk.me</strong>, so anyone can open them, with or without the desktop app.</li>
+              <li><strong>For computers only:</strong> Windows, macOS and Linux. On a phone, keep using slynk.me.</li>
+            </ul>
+
+            <h3>Downloads</h3>
+            <p class="on-web">
+              Entirely optional: Slynk works just as well at slynk.me, and nobody needs the desktop app to open your links.
+            </p>
+            <!-- No company, so no Apple or Microsoft signing; check the fingerprint first -->
+            <p class="dl-trust">
+              <strong>Slynk isn’t a company, a person or any other legal entity</strong>, so it can’t present itself to Apple or
+              Microsoft as one, or pass the tests they set before a program may open without warnings. On a Mac you’ll have to
+              jump through a few hoops the first time, and Windows asks you to confirm, so weigh up whether it’s worth it: the
+              website is exactly the same, except that each visit fetches Slynk from slynk.me first. If you go ahead, check the download’s SHA-256 fingerprint against
+              the one on GitHub (<a href="#download-check">how</a>) before you follow the steps below. On Linux it just runs.
+            </p>
+            <div class="downloads">
+              <div class="dl-row">
+                <svg class="dl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="16" rx="2" /><path d="M2.5 8.5h19M11.5 6.25h1.8M14.9 5.4h1.7v1.7h-1.7zM18.3 5.4l1.7 1.7M20 5.4l-1.7 1.7" /></svg>
+                <div class="dl-head">
+                  <h4>Windows</h4>
+                  <p class="dl-for">Windows 10 or 11, 64-bit</p>
+                </div>
+                <div class="dl-get">
+                  <a class="btn small grad-btn" href="https://github.com/slynkme/slynk/releases/download/v1.0.0/slynk.exe" target="_blank" rel="noopener noreferrer">Download<span class="sr-only"> for Windows</span> <span class="dl-size">21.0 MB</span></a>
+                </div>
+                <p class="dl-how">
+                  Double-click <strong>slynk.exe</strong>. If “Windows protected your PC” appears, click <strong>More info</strong>,
+                  then <strong>Run anyway</strong>.
+                </p>
+                <div class="dl-sums">
+                  <p>SHA-256 <code>6c5ec288c7b74ecb2696cc4231f112f13785ac5836b61c00cbf7fbb17b4867aa</code></p>
+                </div>
+              </div>
+              <div class="dl-row">
+                <svg class="dl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 9V6.5a2.5 2.5 0 1 0-2.5 2.5h11a2.5 2.5 0 1 0-2.5-2.5v11a2.5 2.5 0 1 0 2.5-2.5h-11a2.5 2.5 0 1 0 2.5 2.5z" /></svg>
+                <div class="dl-head">
+                  <h4>Mac</h4>
+                  <p class="dl-for">macOS 13 or later, on Apple silicon or Intel</p>
+                </div>
+                <div class="dl-get">
+                  <a class="btn small grad-btn" href="https://github.com/slynkme/slynk/releases/download/v1.0.0/slynk-mac-apple-silicon.zip" target="_blank" rel="noopener noreferrer"><span class="sr-only">Download for a Mac with </span>Apple silicon <span class="dl-size">14.1 MB</span></a>
+                  <a class="btn small grad-btn" href="https://github.com/slynkme/slynk/releases/download/v1.0.0/slynk-mac-intel.zip" target="_blank" rel="noopener noreferrer"><span class="sr-only">Download for a Mac with </span>Intel <span class="dl-size">14.4 MB</span></a>
+                </div>
+                <p class="dl-how">
+                  Double-click the zip, then <strong>Slynk</strong>. The first time, macOS won’t open it until you allow it in
+                  System Settings (<a href="#download-mac">how</a>).
+                </p>
+                <div class="dl-sums">
+                  <p>Apple silicon, SHA-256 <code>010aa2b48560c0bb4f0939bdff996f1e82786b9c7a69af31000c3b5a7ab16757</code></p>
+                  <p>Intel, SHA-256 <code>5b2d22f9a0ee8967e2c2be0619949c6161a94bfc2c51a82d0d28214ba0e53c76</code></p>
+                </div>
+              </div>
+              <div class="dl-row">
+                <svg class="dl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="16" rx="2" /><path d="M7 9.5l3 2.5-3 2.5M12.5 15h4.5" /></svg>
+                <div class="dl-head">
+                  <h4>Linux</h4>
+                  <p class="dl-for">64-bit PCs (x86-64)</p>
+                </div>
+                <div class="dl-get">
+                  <a class="btn small grad-btn" href="https://github.com/slynkme/slynk/releases/download/v1.0.0/slynk-linux-x64.zip" target="_blank" rel="noopener noreferrer">Download<span class="sr-only"> for Linux</span> <span class="dl-size">14.0 MB</span></a>
+                </div>
+                <p class="dl-how">Unzip it and run <code>./slynk</code> in a terminal.</p>
+                <div class="dl-sums">
+                  <p>SHA-256 <code>166e766c092a263e35def129b0ebc1fe47a8966b72f504ef52fe35fc39fd3dd5</code></p>
+                </div>
+              </div>
+            </div>
+            <p class="dl-note">
+              Built 2 November 2026. The downloads come from Slynk’s page on GitHub, which lists their
+              fingerprints too and, like any website, sees your visit.
+            </p>
+
+            <div class="faq">
+              <details id="download-windows">
+                <summary>How do I start it on Windows?</summary>
+                <p>
+                  Double-click <strong>slynk.exe</strong>, in your Downloads folder or your browser’s list of downloads, and if
+                  “Windows protected your PC” appears, click More info, then Run anyway. Slynk opens in its own window; closing
+                  it stops Slynk. If Smart App Control is on (Windows 11), it may block Slynk without offering Run anyway.
+                </p>
+              </details>
+              <details id="download-mac">
+                <summary>How do I start it on a Mac?</summary>
+                <ol class="doc-steps">
+                  <li>Double-click the zip you downloaded, then double-click <strong>Slynk</strong> in the folder it makes.</li>
+                  <li>
+                    The first time, macOS won’t open it. Close its message (Done), then in System Settings › Privacy &amp;
+                    Security, scroll down to Security and click Open Anyway beside “Slynk was blocked to protect your Mac”.
+                    Click Open Anyway again (Open, on older macOS), and enter your password. You do this once for each new
+                    version.
+                  </li>
+                  <li>Slynk opens in its own window, and closing it stops Slynk. You can keep it in your Applications folder.</li>
+                </ol>
+              </details>
+              <details id="download-linux">
+                <summary>How do I start it on Linux?</summary>
+                <p>
+                  Unzip it, then run <code>./slynk</code> in a terminal. Slynk opens in its own window, and closing it stops it.
+                  The first time, it adds itself to your apps menu, to start it from there next time.
+                </p>
+              </details>
+              <details id="download-check">
+                <summary>How do I check it’s the official version?</summary>
+                <p>
+                  Each download’s fingerprint (its SHA-256) is listed above, and with the release on GitHub. Work out your
+                  file’s and compare: if a single character differs, don’t run it.
+                </p>
+                <ul class="doc-list">
+                  <li><strong>Windows:</strong> in PowerShell, <code>Get-FileHash .\slynk.exe</code></li>
+                  <li><strong>Mac:</strong> in Terminal, <code>shasum -a 256 slynk-mac-*.zip</code></li>
+                  <li><strong>Linux:</strong> <code>sha256sum slynk-linux-x64.zip</code></li>
+                </ul>
+              </details>
+              <details id="download-updates">
+                <summary>Does it update itself?</summary>
+                <p>
+                  No: it stays exactly as you downloaded it, which is the point. <span class="on-web">When there’s a new version, it appears here.</span><span class="on-local">New versions appear on slynk.me’s About page and on Slynk’s page on GitHub, not here.</span>
+                  The foot of Slynk’s page names your version and when it was made. Download the new one and use it in place of
+                  the old.
+                </p>
+              </details>
+              <details id="download-others">
+                <summary>Can anyone else use the desktop app on my computer?</summary>
+                <p>
+                  No. It answers only the browsers on your own computer, not other devices on your network. Anyone using your
+                  computer and browser can, as with slynk.me.
+                </p>
+              </details>
+            </div>
+            <p class="section-close"><button class="link-btn" type="button" data-close-section>Close this section</button></p>
+          </div>
+        </details>
 
         <details class="section" id="sending">
           <summary><h2>Sending something</h2></summary>
@@ -1121,7 +1312,8 @@
                   What no outside check can catch is a changed page sent to one person, while everyone who checks gets the real
                   one. Nor can a page vouch for itself: a changed one could name any version at its foot. Only a check made by your
                   own browser as the files arrive could catch that, such as an extension that checks each one against the
-                  published list. None exists for Slynk yet.                </p>
+                  published list. None exists for Slynk yet. Or use <a href="#download">the desktop app</a>: you check its fingerprint once, when you
+                  download it, and it runs those same files from your own computer every time.                </p>
                 <p class="source-link"><a href="https://github.com/slynkme/slynk/blob/main/deploy/check-site.sh" target="_blank" rel="noopener noreferrer">See the checking script</a></p>
               </details>
               <details id="credits">
